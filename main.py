@@ -398,7 +398,6 @@ def adauga_angajat():
             """, (nume, email, functie, parola_hash))
             db.commit()
             mesaj = "Angajat adăugat cu succes!"
-            return redirect(url_for('lista_angajati'))
 
     return render_template('adauga_angajat.html', mesaj=mesaj, eroare=eroare)
 
