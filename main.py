@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import psycopg2
+import psycopg2.extras
 import urllib.parse as urlparse
 import os
 from werkzeug.utils import secure_filename
@@ -38,7 +39,7 @@ def login():
     email = request.form['email']
     parola = request.form['parola']
 
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
     user = cursor.fetchone()
 
@@ -52,7 +53,7 @@ def login():
 def dashboard():
     if 'email' in session:
         email = session['email']
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Date angajat
         cursor.execute("SELECT nume, functie FROM users WHERE email = %s", (email,))
@@ -116,7 +117,7 @@ def consimtamant():
         return redirect(url_for('home'))
 
     email = session['email']
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
         SELECT id, status, scop, data_acordarii, ip, locatie, '' AS document_url
@@ -134,7 +135,7 @@ def acorda_consimtamant():
         return redirect(url_for('home'))
 
     email = session['email']
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     # Preluăm ultimul document încărcat
     cursor.execute("SELECT cale_fisier FROM documente ORDER BY id DESC LIMIT 1")
@@ -176,7 +177,7 @@ def admin_login():
         email = request.form['email']
         parola = request.form['parola']
 
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute("SELECT * FROM admin_users WHERE email = %s", (email,))
         admin = cursor.fetchone()
 
@@ -225,7 +226,7 @@ def admin_dashboard():
     email_filter = request.args.get('email')
     status_filter = request.args.get('status')
 
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     query = """
         SELECT email, status, scop, tip_consimtamant, data_acordarii, ip, locatie, departament
         FROM consimtamant_extins
@@ -303,7 +304,7 @@ def admin_dashboard_full():
     if 'admin_email' not in session:
         return redirect(url_for('home'))
 
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("SELECT COUNT(*) AS total FROM users")
     total_angajati = cursor.fetchone()['total']
@@ -331,7 +332,7 @@ def admin_angajati():
     if 'admin_email' not in session:
         return redirect(url_for('home'))
 
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     if request.method == 'POST':
         nume = request.form['nume']
@@ -358,7 +359,7 @@ def lista_angajati():
     if 'admin_email' not in session:
         return redirect(url_for('home'))
 
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT id, nume, email, functie FROM users WHERE role = 'angajat'")
     angajati = cursor.fetchall()
 
@@ -398,7 +399,7 @@ def adauga_angajat():
 
 @app.route('/api/consimtamant/<email>', methods=['GET'])
 def get_consimtamant(email):
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT status, data_acordarii FROM consimtamant_extins WHERE email = %s ORDER BY data_acordarii DESC LIMIT 1", (email,))
     rezultat = cursor.fetchone()
 
