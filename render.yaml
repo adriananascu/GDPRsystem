@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: gdpr-consimtamant
+    env: python
+    buildCommand: ""
+    startCommand: "gunicorn main:app"

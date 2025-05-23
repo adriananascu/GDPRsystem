@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+*.ini
+uploads/
+desktop.ini

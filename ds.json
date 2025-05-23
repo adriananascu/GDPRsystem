@@ -1,0 +1,20 @@
+{
+    "email": "angajat@email.com",
+    "first_name": "Andrei",
+    "last_name": "Popescu",
+    "status": "acordat",
+    "scop": "abonare_newsletter",
+    "metadata": {
+      "ip": "192.168.1.21",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      "locatie": "RO",
+      "pagina_origine": "https://platforma-companie.ro/formular-consimtamant"
+    },
+    "detalii_utilizator": {
+      "rol": "angajat",
+      "departament": "Resurse Umane"
+    },
+    "tip_consimtamant": "explicit",
+    "data_acordarii": "2025-04-10T17:20:00Z"
+  }
+  

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Înregistrare</title>
+    <style>
+        body {
+            background-image: url("/static/poza.jpg");
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .register-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        input[type="submit"] {
+            background-color: #1976d2;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #155a9c;
+        }
+
+        .msg {
+            text-align: center;
+            background-color: #e0f7e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .err {
+            text-align: center;
+            background-color: #fdecea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        .link-login {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .link-login a {
+            color: #1976d2;
+            text-decoration: none;
+        }
+
+        .link-login a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Înregistrare cont nou</h2>
+        <h3 style="color:red; text-align:center;">TEST TEST TEST – Acest fișier s-a încărcat corect!</h3>
+
+        <form action="/register" method="post">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required placeholder="email@exemplu.com">
+            <br><br>
+
+            <label for="parola">Parolă:</label>
+            <input type="password" id="parola" name="parola" required placeholder="Parola">
+            <br><br>
+
+            <label for="confirmare">Confirmă parola:</label>
+            <input type="password" id="confirmare" name="confirmare" required placeholder="Confirmă parola">
+            <br><br>
+
+            <input type="submit" value="Înregistrează-te">
+        </form>
+
+        {% if mesaj %}
+            <div class="msg">
+                <p>{{ mesaj }}</p>
+                <p><a href="/">→ Loghează-te acum</a></p>
+            </div>
+        {% endif %}
+
+        {% if eroare %}
+            <div class="err">
+                <p>{{ eroare }}</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

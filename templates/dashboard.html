@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        body {
+            background-image: url("/static/poza.jpg");
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .dashboard-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.15);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            color: #1976d2;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 10px;
+        }
+
+        .consent-status {
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+        }
+
+        button {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #125a9c;
+        }
+
+        .logout-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #1976d2;
+            text-decoration: none;
+        }
+
+        .link-consimtamant {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .link-consimtamant a {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .link-consimtamant a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h2>Bine ai venit, {{ email }}!</h2>
+
+        <form action="{{ url_for('salveaza_consimtamant') }}" method="post">
+            <label>
+                <input type="checkbox" name="consimtamant" id="consimtamant" onchange="actualizeazaStatus()">
+                Sunt de acord cu prelucrarea datelor mele personale
+            </label>
+
+            <p class="consent-status" id="status-text">Stare actuală: consimțământ neacordat</p>
+
+            <button type="submit">Salvează consimțământul</button>
+        </form>
+
+        <div class="link-consimtamant">
+            <a href="{{ url_for('consimtamant') }}">📝 Vezi consimțămintele tale</a>
+        </div>
+
+        <a href="/logout" class="logout-link">→ Logout</a>
+    </div>
+
+    <script>
+        function actualizeazaStatus() {
+            const checkbox = document.getElementById('consimtamant');
+            const statusText = document.getElementById('status-text');
+
+            if (checkbox.checked) {
+                statusText.textContent = "Stare actuală: consimțământ acordat ✅";
+            } else {
+                statusText.textContent = "Stare actuală: consimțământ neacordat ❌";
+            }
+        }
+    </script>
+</body>
+</html>

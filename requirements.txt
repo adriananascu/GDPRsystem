@@ -1,0 +1,4 @@
+Flask==2.3.2
+Flask-MySQLdb==1.0.1
+Werkzeug==2.3.6
+gunicorn==21.2.0

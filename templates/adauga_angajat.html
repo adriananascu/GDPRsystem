@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Adaugă Angajat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6fa;
+            padding: 40px;
+        }
+
+        h2 {
+            color: #2f3e9e;
+        }
+
+        form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 20px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .msg {
+            margin-top: 20px;
+            text-align: center;
+            color: green;
+            font-weight: bold;
+        }
+
+        .err {
+            margin-top: 20px;
+            text-align: center;
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>➕ Adaugă un angajat nou</h2>
+    <form method="post">
+        <label for="nume">Nume complet:</label>
+        <input type="text" name="nume" id="nume" required>
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" required>
+
+        <label for="functie">Funcție:</label>
+        <input type="text" name="functie" id="functie" required>
+
+        <label for="parola">Parolă:</label>
+        <input type="password" name="parola" id="parola" required>
+
+        <button type="submit">✔️ Adaugă</button>
+    </form>
+
+    {% if mesaj %}
+        <div class="msg">{{ mesaj }}</div>
+    {% endif %}
+    {% if eroare %}
+        <div class="err">{{ eroare }}</div>
+    {% endif %}
+</body>
+</html>

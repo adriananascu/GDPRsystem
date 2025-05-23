@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 { text-align: center; color: #2c3e50; }
+
+        /* ------------ formular upload ------------ */
+        .upload-box {
+            margin-top: 20px;
+        }
+        .upload-box label { font-weight: bold; }
+        .upload-box button {
+            padding: 8px 14px;
+            background-color: #1976d2;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .upload-box button:hover { background: #125aa6; }
+
+        /* ------------ filtre ------------ */
+        form.filter {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        form.filter label { display:block; margin-bottom:6px; font-weight:bold; }
+        form.filter input, form.filter select {
+            padding: 8px; border:1px solid #ccc; border-radius:6px;
+        }
+        form.filter button { padding:10px 16px; background:#1976d2; color:#fff;
+            border:none; border-radius:6px; cursor:pointer; }
+        form.filter button:hover { background:#125aa6; }
+
+        /* ------------ tabel ------------ */
+        table {
+            width: 100%; border-collapse: collapse; margin-top: 30px;
+            background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px; text-align: left; border-bottom:1px solid #ddd;
+            font-size: 14px;
+        }
+        th { background:#1976d2; color:#fff; position: sticky; top:0; }
+        tr:hover { background:#f5f5f5; }
+
+        /* ------------ diverse ------------ */
+        .logout-link { display:inline-block; margin-top:20px; color:#d32f2f;
+            font-weight:bold; text-decoration:none; }
+        .email-admin { text-align:right; font-size:14px; color:#555; }
+        .alert-box {
+            background:#ffebee; color:#c62828; padding:12px; border-radius:8px;
+            margin-top:15px; text-align:center; font-weight:bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 Panou Administrator</h1>
+
+    <!-- 🔽 Form upload document (unic) -->
+    <form class="upload-box" action="/upload_document" method="post" enctype="multipart/form-data">
+        <label>📄 Încarcă document consimțământ (PDF/DOCX):</label><br>
+        <input type="file" name="document" required>
+        <button type="submit">📤 Trimite către angajați</button>
+    </form>
+
+    <!-- 🟢 Mesaje succes / eroare -->
+    {% if session['upload_succes'] %}
+        <p style="color:green;font-weight:bold;">{{ session.pop('upload_succes') }}</p>
+    {% endif %}
+    {% if session['upload_error'] %}
+        <p style="color:red;font-weight:bold;">{{ session.pop('upload_error') }}</p>
+    {% endif %}
+
+    <p class="email-admin">Autentificat ca: <strong>{{ admin_email }}</strong></p>
+
+    {% if expirate_count > 0 %}
+        <div class="alert-box">
+            ⚠️ {{ expirate_count }} consimțăminte neacordate au termenul depășit!
+        </div>
+    {% endif %}
+
+    <!-- 🔍 Filtru email + status -->
+    <form class="filter" method="get">
+        <div>
+            <label for="email">Filtru email:</label>
+            <input type="text" id="email" name="email" value="{{ request.args.get('email', '') }}">
+        </div>
+
+        <div>
+            <label for="status">Status consimțământ:</label>
+            <select id="status" name="status">
+                <option value="">-- Toate --</option>
+                <option value="acordat"   {% if request.args.get('status')=='acordat' %}selected{% endif %}>Acordat</option>
+                <option value="neacordat" {% if request.args.get('status')=='neacordat' %}selected{% endif %}>Neacordat</option>
+            </select>
+        </div>
+
+        <div>
+            <button type="submit">🔍 Filtrează</button>
+        </div>
+    </form>
+
+    <!-- 📋 Tabel consimțăminte -->
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Scop</th>
+                <th>Tip</th>
+                <th>Data acordării</th>
+                <th>IP</th>
+                <th>Locație</th>
+                <th>Departament</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for consimtamant in consimtaminte %}
+                <tr>
+                    <td>{{ consimtamant.email }}</td>
+                    <td>
+                        {{ consimtamant.status }}
+                        {% if consimtamant.status == 'neacordat' and consimtamant.expirat %}
+                            <span style="color:red;font-weight:bold;">⏰ Termen depășit!</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ consimtamant.scop }}</td>
+                    <td>{{ consimtamant.tip_consimtamant }}</td>
+                    <td>{{ consimtamant.data_acordarii }}</td>
+                    <td>{{ consimtamant.ip }}</td>
+                    <td>{{ consimtamant.locatie }}</td>
+                    <td>{{ consimtamant.departament }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="/logout" class="logout-link">→ Deconectare</a>
+</body>
+</html>
