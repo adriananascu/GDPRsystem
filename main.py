@@ -6,6 +6,7 @@ import psycopg2.extras
 import urllib.parse as urlparse
 import os
 from dotenv import load_dotenv
+from flask import send_from_directory
 
 from werkzeug.utils import secure_filename
 
@@ -149,7 +150,7 @@ def acorda_consimtamant():
     email = session['email']
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    # Preluăm ultimul document încărcat
+    # 🟢 Preluăm ultimul document încărcat
     cursor.execute("SELECT cale_fisier FROM documente ORDER BY id DESC LIMIT 1")
     rezultat = cursor.fetchone()
 
@@ -159,6 +160,7 @@ def acorda_consimtamant():
         document_url = None
 
     return render_template('acorda_consimtamant.html', email=email, document_url=document_url)
+
 
 
 
@@ -279,6 +281,10 @@ def admin_dashboard():
         admin_email=session['admin_email'],
         expirate_count=expirate_count
     )
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/upload_document', methods=['POST'])
 def upload_document():
