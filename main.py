@@ -401,6 +401,7 @@ def adauga_angajat():
 
     return render_template('adauga_angajat.html', mesaj=mesaj, eroare=eroare)
 
+
 @app.route('/api/consimtamant/<email>', methods=['GET'])
 def get_consimtamant(email):
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
