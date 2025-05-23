@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import psycopg2
@@ -540,6 +542,38 @@ def documente():
     except Exception as e:
         return f"<h2>Eroare în /documente:</h2><pre>{e}</pre>"
 
+@app.route('/acorda_consimtamant/<int:document_id>')
+def acorda_consimtamant(document_id):
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    email = session['email']
+    ip = request.remote_addr
+    user_agent = request.user_agent.string
+    locatie = "RO"  # poți adăuga geolocalizare dacă vrei mai târziu
+    pagina_origine = request.referrer or request.url
+    rol = 'angajat'
+
+    cursor = db.cursor()
+    cursor.execute("""
+        INSERT INTO consimtamant_extins (
+            email, status, scop, tip_consimtamant, data_acordarii,
+            ip, user_agent, locatie, pagina_origine, rol, department, document_id
+        )
+        SELECT %s, %s, d.scop, %s, CURRENT_TIMESTAMP,
+               %s, %s, %s, %s, %s, a.departament, d.id
+        FROM documente d
+        JOIN angajati a ON a.email = %s
+        WHERE d.id = %s
+    """, (
+        email, 'acordat', 'explicit',
+        ip, user_agent, locatie, pagina_origine, rol,
+        email, document_id
+    ))
+    db.commit()
+
+    flash('Consimțământul a fost salvat cu succes!', 'success')
+    return redirect(url_for('documente'))
 
 
 
