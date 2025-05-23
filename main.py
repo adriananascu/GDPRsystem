@@ -101,28 +101,44 @@ def salveaza_consimtamant():
         return redirect(url_for('home'))
 
     email = session['email']
-    status = 'acordat' if request.form.get('consimtamant') else 'neacordat'
+    acordat = request.form.get('consimtamant') == 'on'
     ip = request.remote_addr
     user_agent = request.headers.get('User-Agent')
+    locatie = "RO"
+    pagina_origine = request.referrer or ""
+    rol = "angajat"
+    departament = "Resurse Umane"
 
-    cursor = db.cursor()
-    query = """
+    # Ia ultimul document încărcat (presupunem că doar unul e activ)
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor.execute("SELECT id, scop FROM documente ORDER BY id DESC LIMIT 1")
+    document = cursor.fetchone()
+
+    if document:
+        document_id = document['id']
+        scop = document['scop']
+    else:
+        document_id = None
+        scop = "necunoscut"
+
+    status = 'acordat' if acordat else 'neacordat'
+    tip_consimtamant = 'explicit'
+    data_acordarii = datetime.now()
+
+    cursor.execute("""
         INSERT INTO consimtamant_extins (
             email, status, scop, tip_consimtamant, data_acordarii,
-            ip, user_agent, locatie, pagina_origine, rol, departament
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-
-    values = (
-        email, status, 'abonare_newsletter', 'explicit', datetime.now(),
-        ip, user_agent, 'RO', 'https://platforma.ro/formular', 'angajat', 'Resurse Umane'
-    )
-
-    cursor.execute(query, values)
+            ip, user_agent, locatie, pagina_origine, rol, departament, document_id
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """, (
+        email, status, scop, tip_consimtamant, data_acordarii,
+        ip, user_agent, locatie, pagina_origine, rol, departament, document_id
+    ))
     db.commit()
 
-    session['succes'] = "Consimțământul a fost salvat cu succes ✅"
     return redirect(url_for('dashboard'))
+
 
 @app.route('/consimtamant')
 def consimtamant():
