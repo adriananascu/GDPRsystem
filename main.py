@@ -528,21 +528,14 @@ def adauga_angajat():
 @app.route('/documente')
 def documente():
     if 'email' not in session:
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
 
-    email = session['email']
-    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-    # Obținem documentele asociate cu utilizatorul curent
-    cursor.execute("""
-        SELECT d.nume_fisier, d.scop, d.cale_fisier
-        FROM documente d
-        JOIN consimtamant_extins c ON c.document_id = d.id
-        WHERE c.email = %s
-    """, (email,))
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM documente")
     documente = cursor.fetchall()
 
-    return render_template('documente.html', documente=documente, email=email)
+    return render_template('documente.html', documente=documente)
+
 
 
 @app.route('/api/consimtamant/<email>', methods=['GET'])

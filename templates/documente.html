@@ -2,39 +2,40 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>Documentele mele</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <title>Documente disponibile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="mb-4 text-primary">📄 Documentele mele – {{ email }}</h2>
+        <h3 class="mb-4">📄 Documente disponibile pentru semnare</h3>
 
         {% if documente %}
-            <table class="table table-bordered bg-white">
-                <thead class="table-primary">
-                    <tr>
-                        <th>Nume fișier</th>
-                        <th>Scop</th>
-                        <th>Acțiune</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for doc in documente %}
-                        <tr>
-                            <td>{{ doc.nume_fisier }}</td>
-                            <td>{{ doc.scop.replace("_", " ") }}</td>
-                            <td>
-                                <a href="/{{ doc.cale_fisier }}" target="_blank" class="btn btn-sm btn-outline-primary">Descarcă</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <table class="table table-bordered">
+            <thead class="table-primary">
+                <tr>
+                    <th>Nume fișier</th>
+                    <th>Scop</th>
+                    <th>Acțiune</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documente %}
+                <tr>
+                    <td>{{ doc.nume_fisier }}</td>
+                    <td>{{ doc.scop }}</td>
+                    <td>
+                        <a href="/{{ doc.cale_fisier }}" class="btn btn-sm btn-outline-primary" download>Descarcă</a>
+                        <a href="/acorda_consimtamant/{{ doc.id }}" class="btn btn-sm btn-success ms-2">Acordă consimțământ</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-            <p class="text-muted">Nu există documente asociate contului tău.</p>
+        <div class="alert alert-warning">Nu există documente încărcate.</div>
         {% endif %}
 
-        <a href="/dashboard" class="btn btn-link mt-3">← Înapoi la Dashboard</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-link mt-3">← Înapoi la dashboard</a>
     </div>
 </body>
 </html>
