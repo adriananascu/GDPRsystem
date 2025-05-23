@@ -70,11 +70,23 @@
     <h1>📊 Panou Administrator</h1>
 
     <!-- 🔽 Form upload document (unic) -->
-    <form class="upload-box" action="/upload_document" method="post" enctype="multipart/form-data">
-        <label>📄 Încarcă document consimțământ (PDF/DOCX):</label><br>
-        <input type="file" name="document" required>
-        <button type="submit">📤 Trimite către angajați</button>
-    </form>
+    <!-- 🔽 Form upload document (unic) -->
+<form class="upload-box" action="/upload_document" method="post" enctype="multipart/form-data">
+    <label>📄 Încarcă document consimțământ (PDF/DOCX):</label><br>
+    <input type="file" name="document" required>
+
+    <label for="scop">🔍 Scop document:</label><br>
+    <select name="scop" id="scop" required>
+        <option value="utilizare_imagine_angajat">Utilizare imagine angajat</option>
+        <option value="prelucrare_date_personale">Prelucrare date personale</option>
+        <option value="afisare_in_materiale">Afișare în materiale promoționale</option>
+        <option value="altele">Alt scop</option>
+    </select>
+
+    <br><br>
+    <button type="submit">📤 Trimite către angajați</button>
+</form>
+
 
     <!-- 🟢 Mesaje succes / eroare -->
     {% if session['upload_succes'] %}

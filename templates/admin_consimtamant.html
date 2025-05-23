@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Documente de consimțamânt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6fa;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        h2 {
+            color: #2f3e9e;
+            margin-bottom: 30px;
+        }
+        .table th {
+            background-color: #1976d2;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>📄 Documente de consimțamânt</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nume fișier</th>
+                <th>Scop</th>
+                <th>Semnate</th>
+                <th>Nesemnate</th>
+                <th>Fișier</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documente %}
+            <tr>
+                <td>{{ doc.nume_fisier }}</td>
+                <td>{{ doc.scop }}</td>
+                <td>{{ doc.nr_semnate }}</td>
+                <td>{{ doc.nr_nesemnate }}</td>
+                <td><a href="{{ url_for('static', filename=doc.cale_fisier) }}" class="btn btn-outline-primary btn-sm" target="_blank">Descarcă</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
