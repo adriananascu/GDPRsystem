@@ -198,24 +198,7 @@ def consimtamant():
     consimtaminte = cursor.fetchall()
 
     return render_template('consimtamant.html', email=email, consimtaminte=consimtaminte)
-@app.route('/acorda_consimtamant')
-def acorda_consimtamant():
-    if 'email' not in session:
-        return redirect(url_for('home'))
 
-    email = session['email']
-    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-    # 🟢 Preluăm ultimul document încărcat
-    cursor.execute("SELECT cale_fisier FROM documente ORDER BY id DESC LIMIT 1")
-    rezultat = cursor.fetchone()
-
-    if rezultat:
-        document_url = '/' + rezultat['cale_fisier']
-    else:
-        document_url = None
-
-    return render_template('acorda_consimtamant.html', email=email, document_url=document_url)
 
 @app.route('/admin_consimtamant')
 def admin_consimtamant():
