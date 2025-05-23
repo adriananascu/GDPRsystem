@@ -101,31 +101,28 @@ def salveaza_consimtamant():
         return redirect(url_for('home'))
 
     email = session['email']
-    acordat = request.form.get('consimtamant') == 'on'
-    ip = request.remote_addr
-    user_agent = request.headers.get('User-Agent')
-    locatie = "RO"
-    pagina_origine = request.referrer or ""
-    rol = "angajat"
-    departament = "Resurse Umane"
-
-    # Ia ultimul document încărcat (presupunem că doar unul e activ)
-    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute("SELECT id, scop FROM documente ORDER BY id DESC LIMIT 1")
-    document = cursor.fetchone()
-    document_id = document['id']
-
-    if document:
-        document_id = document['id']
-        scop = document['scop']
-    else:
-        document_id = None
-        scop = "necunoscut"
-
-    status = 'acordat' if acordat else 'neacordat'
+    status = 'acordat' if 'consimtamant' in request.form else 'neacordat'
     tip_consimtamant = 'explicit'
     data_acordarii = datetime.now()
+    ip = request.remote_addr
+    user_agent = request.headers.get('User-Agent')
+    locatie = 'RO'  # Poți adăuga detectare reală
+    pagina_origine = request.referrer
+    rol = 'angajat'
+    departament = 'Resurse Umane'  # Poți seta din DB dacă vrei
+    scop = 'utilizare_imagine_angajat'  # sau altul selectat
 
+    # Obține ultimul document încărcat
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor.execute("SELECT id FROM documente ORDER BY id DESC LIMIT 1")
+    document = cursor.fetchone()
+    document_id = document['id'] if document else None
+
+    if document_id is None:
+        session['upload_error'] = "Nu există niciun document activ!"
+        return redirect(url_for('dashboard'))
+
+    # Salvează consimțământul
     cursor.execute("""
         INSERT INTO consimtamant_extins (
             email, status, scop, tip_consimtamant, data_acordarii,
@@ -136,9 +133,10 @@ def salveaza_consimtamant():
         email, status, scop, tip_consimtamant, data_acordarii,
         ip, user_agent, locatie, pagina_origine, rol, departament, document_id
     ))
-    db.commit()
 
+    db.commit()
     return redirect(url_for('dashboard'))
+
 
 
 @app.route('/consimtamant')
@@ -352,10 +350,30 @@ def upload_document():
         cursor = db.cursor()
         scop = request.form.get('scop')
 
+        # 1. Salvăm documentul în tabela "documente"
         cursor.execute(
-            "INSERT INTO documente (nume_fisier, cale_fisier, scop) VALUES (%s, %s, %s)",
+            "INSERT INTO documente (nume_fisier, cale_fisier, scop) VALUES (%s, %s, %s) RETURNING id",
             (filename, filepath, scop)
         )
+        document_id = cursor.fetchone()[0]
+
+        # 2. Selectăm toți angajații existenți
+        cursor.execute("SELECT email FROM users WHERE role = 'angajat'")
+        angajati = cursor.fetchall()
+
+        # 3. Inserăm un rând în consimtamant_extins pentru fiecare angajat
+        for angajat in angajati:
+            email = angajat[0]
+            cursor.execute("""
+                INSERT INTO consimtamant_extins (
+                    email, status, scop, tip_consimtamant, data_acordarii,
+                    ip, user_agent, locatie, pagina_origine, rol, departament, document_id
+                )
+                VALUES (%s, %s, %s, %s, NULL, NULL, NULL, NULL, NULL, 'angajat', NULL, %s)
+            """, (
+                email, 'neacordat', scop, 'explicit', document_id
+            ))
+
         db.commit()
 
         session['upload_succes'] = f"Fișierul „{filename}” a fost încărcat cu succes!"
@@ -363,6 +381,7 @@ def upload_document():
 
     session['upload_error'] = "Fișier invalid! Trebuie să fie PDF sau DOCX."
     return redirect(url_for('admin_dashboard'))
+
 
 
 @app.route('/admin_dashboard_full')
