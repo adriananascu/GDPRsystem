@@ -415,25 +415,3 @@ def get_consimtamant(email):
             "mesaj": "Nu există consimțământ salvat pentru acest utilizator."
         }), 404
 
-# ✅ Cod temporar pentru crearea contului demo
-if __name__ == '__main__':
-    from werkzeug.security import generate_password_hash
-
-    cursor = db.cursor()
-    email = 'angajat@example.com'
-    parola = 'parola123'
-    parola_hash = generate_password_hash(parola)
-
-    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-    existent = cursor.fetchone()
-    if not existent:
-        cursor.execute("""
-            INSERT INTO users (nume, email, functie, password, role)
-            VALUES (%s, %s, %s, %s, 'angajat')
-        """, ('Ion Popescu', email, 'Operator', parola_hash))
-        db.commit()
-        print(f"✅ Cont creat: {email} | parola: {parola}")
-    else:
-        print("ℹ️ Contul deja există.")
-
-    app.run(debug=True)
