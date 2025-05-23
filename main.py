@@ -527,14 +527,19 @@ def adauga_angajat():
 
 @app.route('/documente')
 def documente():
-    if 'email' not in session:
-        return redirect(url_for('login'))
+    try:
+        if 'email' not in session:
+            return redirect(url_for('login'))
 
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM documente")
-    documente = cursor.fetchall()
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute("SELECT * FROM documente")
+        documente = cursor.fetchall()
 
-    return render_template('documente.html', documente=documente)
+        return render_template('documente.html', documente=documente)
+    
+    except Exception as e:
+        return f"<h2>Eroare în /documente:</h2><pre>{e}</pre>"
+
 
 
 
