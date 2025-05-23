@@ -5,7 +5,12 @@ import psycopg2
 import psycopg2.extras
 import urllib.parse as urlparse
 import os
+from dotenv import load_dotenv
+
 from werkzeug.utils import secure_filename
+
+load_dotenv()
+
 
 app = Flask(__name__)
 app.secret_key = 'super-secret'
@@ -434,3 +439,5 @@ def get_consimtamant(email):
             "mesaj": "Nu există consimțământ salvat pentru acest utilizator."
         }), 404
 
+if __name__ == '__main__':
+    app.run(debug=True)
