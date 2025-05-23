@@ -343,21 +343,24 @@ def admin_angajati():
         nume = request.form['nume']
         email = request.form['email']
         functie = request.form['functie']
+        parola = request.form['parola']
 
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         existent = cursor.fetchone()
 
         if not existent:
+            parola_hash = generate_password_hash(parola)
             cursor.execute(
-                "INSERT INTO users (nume, email, functie) VALUES (%s, %s, %s)",
-                (nume, email, functie)
+                "INSERT INTO users (nume, email, functie, password, role) VALUES (%s, %s, %s, %s, 'angajat')",
+                (nume, email, functie, parola_hash)
             )
             db.commit()
 
-    cursor.execute("SELECT nume, email, functie FROM users")
+    cursor.execute("SELECT nume, email, functie FROM users WHERE role = 'angajat'")
     angajati = cursor.fetchall()
 
     return render_template('admin_angajati.html', angajati=angajati, admin_email=session['admin_email'])
+
 
 @app.route('/angajati')
 def lista_angajati():
