@@ -344,6 +344,7 @@ def admin_angajati():
         email = request.form['email']
         functie = request.form['functie']
         parola = request.form['parola']
+        rol = request.form['rol']  # nou
 
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         existent = cursor.fetchone()
@@ -351,8 +352,8 @@ def admin_angajati():
         if not existent:
             parola_hash = generate_password_hash(parola)
             cursor.execute(
-                "INSERT INTO users (nume, email, functie, password, role) VALUES (%s, %s, %s, %s, 'angajat')",
-                (nume, email, functie, parola_hash)
+                "INSERT INTO users (nume, email, functie, password, role) VALUES (%s, %s, %s, %s, %s)",
+                (nume, email, functie, parola_hash, rol)
             )
             db.commit()
 
@@ -360,6 +361,7 @@ def admin_angajati():
     angajati = cursor.fetchall()
 
     return render_template('admin_angajati.html', angajati=angajati, admin_email=session['admin_email'])
+
 
 
 @app.route('/angajati')
