@@ -297,9 +297,11 @@ def upload_document():
         file.save(filepath)
 
         cursor = db.cursor()
+        scop = request.form.get('scop')
+
         cursor.execute(
             "INSERT INTO documente (nume_fisier, cale_fisier, scop) VALUES (%s, %s, %s)",
-            (filename, filepath, 'utilizare_imagine_angajat')
+            (filename, filepath, scop)
         )
         db.commit()
 
