@@ -292,6 +292,8 @@ def upload_document():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
         file.save(filepath)
 
         cursor = db.cursor()
