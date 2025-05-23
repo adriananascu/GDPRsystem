@@ -156,6 +156,7 @@ def acorda_consimtamant():
     return render_template('acorda_consimtamant.html', email=email, document_url=document_url)
 
 
+
 @app.route('/modifica_status', methods=['POST'])
 def modifica_status():
     if 'email' not in session:
@@ -284,7 +285,6 @@ def upload_document():
         return redirect(url_for('admin_dashboard'))
 
     file = request.files['document']
-
     if file.filename == '':
         session['upload_error'] = "Nume de fișier invalid."
         return redirect(url_for('admin_dashboard'))
@@ -306,6 +306,7 @@ def upload_document():
 
     session['upload_error'] = "Fișier invalid! Trebuie să fie PDF sau DOCX."
     return redirect(url_for('admin_dashboard'))
+
 
 @app.route('/admin_dashboard_full')
 def admin_dashboard_full():

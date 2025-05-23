@@ -2,7 +2,7 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>Acord Consimțamânt</title>
+    <title>Acord Consimțământ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -28,6 +28,12 @@
         .document-link {
             margin-bottom: 20px;
             display: inline-block;
+            font-weight: bold;
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        .document-link:hover {
+            text-decoration: underline;
         }
         .form-check-label {
             font-weight: 500;
@@ -36,28 +42,28 @@
 </head>
 <body>
     <div class="container">
-        <h2>Acord Consimțamânt pentru prelucrarea datelor</h2>
+        <h2>Acord Consimțământ pentru prelucrarea datelor</h2>
 
         <p>Prin completarea acestui formular, iți exprimi acordul privind prelucrarea datelor personale în scopul afișării imaginii tale în materiale de promovare internă/externă.</p>
 
         {% if document_url %}
             <a href="{{ document_url }}" target="_blank" class="document-link">📄 Vizualizează documentul complet</a>
         {% else %}
-            <p><em>Documentul complet nu este disponibil momentan.</em></p>
+            <p class="text-muted"><em>Documentul nu este disponibil momentan.</em></p>
         {% endif %}
 
         <form method="POST" action="/salveaza_consimtamant">
             <div class="form-check my-4">
-                <input class="form-check-input" type="checkbox" name="consimtamant" id="consimtamant">
+                <input class="form-check-input" type="checkbox" name="consimtamant" id="consimtamant" required>
                 <label class="form-check-label" for="consimtamant">
                     Sunt de acord cu prelucrarea datelor mele personale.
                 </label>
             </div>
-            <button type="submit" class="btn btn-primary">Salvează consimțamântul</button>
+            <button type="submit" class="btn btn-primary">✅ Semnează documentul</button>
         </form>
 
         <div class="text-center mt-4">
-            <a href="{{ url_for('dashboard') }}">&larr; Îneapoi la Dashboard</a>
+            <a href="{{ url_for('dashboard') }}">&larr; Înapoi la Dashboard</a>
         </div>
     </div>
 </body>
