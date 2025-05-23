@@ -31,8 +31,8 @@ db = psycopg2.connect(
 
 @app.route('/')
 def home():
-    mesaj = session.pop('mesaj', None)
-    return render_template('login.html', mesaj=mesaj)
+    return render_template('home.html')
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -207,7 +207,7 @@ def admin_register():
         elif len(parola) < 8:
             error = "Parola trebuie să aibă cel puțin 8 caractere!"
         else:
-            cursor = db.cursor()
+            cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cursor.execute("SELECT * FROM admin_users WHERE email = %s", (email,))
             existent = cursor.fetchone()
 
@@ -221,6 +221,7 @@ def admin_register():
                 return redirect(url_for('admin_login'))
 
     return render_template('admin_register.html', error=error, mesaj=mesaj)
+
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
