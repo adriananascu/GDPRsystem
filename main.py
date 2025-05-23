@@ -344,7 +344,7 @@ def admin_angajati():
         email = request.form['email']
         functie = request.form['functie']
         parola = request.form['parola']
-        rol = request.form['rol']  # nou
+        rol = request.form['rol']  # 🆕 adăugat
 
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         existent = cursor.fetchone()
