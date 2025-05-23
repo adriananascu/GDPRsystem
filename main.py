@@ -93,6 +93,45 @@ def dashboard():
         return redirect(url_for('home'))
 
 
+@app.route('/setari')
+def setari():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    return render_template("setari.html", email=session['email'])
+
+
+@app.route('/schimba_parola', methods=['GET', 'POST'])
+def schimba_parola():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    mesaj = None
+    eroare = None
+
+    if request.method == 'POST':
+        veche = request.form['parola_veche']
+        noua = request.form['parola_noua']
+        confirmare = request.form['parola_confirmare']
+
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute("SELECT password FROM users WHERE email = %s", (session['email'],))
+        user = cursor.fetchone()
+
+        if not user or not check_password_hash(user['password'], veche):
+            eroare = "Parola veche este incorectă!"
+        elif noua != confirmare:
+            eroare = "Parolele noi nu coincid!"
+        elif len(noua) < 8:
+            eroare = "Parola nouă trebuie să aibă cel puțin 8 caractere!"
+        else:
+            parola_hash = generate_password_hash(noua)
+            cursor.execute("UPDATE users SET password = %s WHERE email = %s", (parola_hash, session['email']))
+            db.commit()
+            mesaj = "Parola a fost schimbată cu succes!"
+
+    return render_template("schimba_parola.html", mesaj=mesaj, eroare=eroare)
+
 
 @app.route('/salveaza_consimtamant', methods=['POST'])
 def salveaza_consimtamant():
