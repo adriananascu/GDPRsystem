@@ -113,6 +113,7 @@ def salveaza_consimtamant():
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT id, scop FROM documente ORDER BY id DESC LIMIT 1")
     document = cursor.fetchone()
+    document_id = document['id']
 
     if document:
         document_id = document['id']
@@ -485,6 +486,16 @@ def get_consimtamant(email):
             "status": "necunoscut",
             "mesaj": "Nu există consimțământ salvat pentru acest utilizator."
         }), 404
+@app.route('/vizualizeaza_consimtamant')
+def vizualizeaza_consimtamant():
+    if 'email' not in session:
+        return redirect(url_for('home'))
+
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor.execute("SELECT * FROM documente ORDER BY id DESC LIMIT 1")
+    document = cursor.fetchone()
+
+    return render_template("vizualizeaza_consimtamant.html", document=document)
 
 if __name__ == '__main__':
     app.run(debug=True)
