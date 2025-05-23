@@ -57,9 +57,13 @@ def dashboard():
 
         # Date angajat
         cursor.execute("SELECT nume, functie FROM users WHERE email = %s", (email,))
+
         user = cursor.fetchone()
+        if not user:
+            return redirect(url_for('logout'))
         nume = user['nume']
         functie = user['functie']
+
 
         # Consimțăminte acordate
         cursor.execute("SELECT COUNT(*) AS total FROM consimtamant_extins WHERE email = %s AND status = 'acordat'", (email,))
