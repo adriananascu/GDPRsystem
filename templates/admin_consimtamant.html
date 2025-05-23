@@ -1,0 +1,23 @@
+<h2>📄 Documente de consimțământ</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Nume fișier</th>
+      <th>Scop</th>
+      <th>Semnate</th>
+      <th>Nesemnate</th>
+      <th>Fișier</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for doc in documente %}
+      <tr>
+        <td>{{ doc.nume_fisier }}</td>
+        <td>{{ doc.scop }}</td>
+        <td>{{ doc.semnate }}</td>
+        <td>{{ doc.nesemnate }}</td>
+        <td><a href="{{ url_for('static', filename=doc.cale_fisier) }}" target="_blank">🔗 Descarcă</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

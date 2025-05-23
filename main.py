@@ -161,6 +161,31 @@ def acorda_consimtamant():
 
     return render_template('acorda_consimtamant.html', email=email, document_url=document_url)
 
+@app.route('/admin_consimtamant')
+def admin_consimtamant():
+    if 'admin_email' not in session:
+        return redirect(url_for('home'))
+
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    cursor.execute("SELECT * FROM documente")
+    documente = cursor.fetchall()
+
+    for doc in documente:
+        # obține numărul de angajați care au semnat pentru fiecare document
+        cursor.execute("""
+            SELECT COUNT(*) FROM consimtamant_extins 
+            WHERE scop = %s AND status = 'acordat'
+        """, (doc['scop'],))
+        doc['semnate'] = cursor.fetchone()['count']
+
+        cursor.execute("""
+            SELECT COUNT(*) FROM consimtamant_extins 
+            WHERE scop = %s AND status = 'neacordat'
+        """, (doc['scop'],))
+        doc['nesemnate'] = cursor.fetchone()['count']
+
+    return render_template('admin_consimtamant.html', documente=documente)
 
 
 
