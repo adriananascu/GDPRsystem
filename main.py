@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-import mysql.connector
+import psycopg2
+import urllib.parse as urlparse
 import os
 from werkzeug.utils import secure_filename
 
@@ -17,11 +18,14 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Conectare la baza de date
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Adriana1!",  # modifică dacă ai altă parolă
-    database="gdpr_system"
+url = urlparse.urlparse(os.getenv("DATABASE_URL"))
+
+db = psycopg2.connect(
+    database=url.path[1:],
+    user=url.username,
+    password=url.password,
+    host=url.hostname,
+    port=url.port
 )
 
 @app.route('/')
@@ -183,6 +187,35 @@ def admin_login():
             error = "Email sau parolă greșite."
 
     return render_template('admin_login.html', error=error)
+@app.route('/admin_register', methods=['GET', 'POST'])
+def admin_register():
+    error = None
+    mesaj = None
+
+    if request.method == 'POST':
+        email = request.form['email']
+        parola = request.form['parola']
+        confirmare = request.form['confirmare']
+
+        if parola != confirmare:
+            error = "Parolele nu coincid!"
+        elif len(parola) < 8:
+            error = "Parola trebuie să aibă cel puțin 8 caractere!"
+        else:
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM admin_users WHERE email = %s", (email,))
+            existent = cursor.fetchone()
+
+            if existent:
+                error = "Emailul este deja înregistrat!"
+            else:
+                parola_hash = generate_password_hash(parola)
+                cursor.execute("INSERT INTO admin_users (email, password) VALUES (%s, %s)", (email, parola_hash))
+                db.commit()
+                mesaj = "Contul a fost creat cu succes! Acum te poți autentifica."
+                return redirect(url_for('admin_login'))
+
+    return render_template('admin_register.html', error=error, mesaj=mesaj)
 
 @app.route('/admin_dashboard')
 def admin_dashboard():

@@ -4,128 +4,120 @@
     <meta charset="UTF-8">
     <title>Dashboard Angajat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f1f2f4;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #e9ecef;
+            font-family: Arial, sans-serif;
         }
         .sidebar {
-            background-color: #0b2b5e;
-            min-height: 100vh;
+            height: 100vh;
+            background-color: #052c65;
             color: white;
-            padding: 20px;
-        }
-        .sidebar h4 {
-            margin-bottom: 30px;
         }
         .sidebar a {
             color: white;
-            text-decoration: none;
             display: block;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 15px;
+            text-decoration: none;
         }
-        .sidebar a:hover, .sidebar .active {
-            background-color: #0d6efd;
+        .sidebar a:hover {
+            background-color: #031d42;
         }
-        .card-custom {
-            border-radius: 15px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-            background-color: white;
-            padding: 20px;
-        }
-        .btn-primary {
+        .card {
+            background-color: #ffffff;
             border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .notification-item i {
-            margin-right: 10px;
+        .card-title {
+            color: #0d6efd;
+        }
+        h2 {
+            color: #052c65;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-2 sidebar d-flex flex-column">
-            <h4 class="text-center">Consimțamântul personal</h4>
-            <a href="#" class="active"><i class="fas fa-file-signature"></i> Consimțăminte</a>
-            <a href="#"><i class="fas fa-file-alt"></i> Documente</a>
-            <a href="#"><i class="fas fa-history"></i> Istoric</a>
-            <a href="#"><i class="fas fa-cog"></i> Setări</a>
+        <!-- Bara laterală -->
+        <div class="col-md-2 sidebar">
+            <h4 class="text-center py-3">Consimțământul personal</h4>
+            <a href="#">Consimțăminte</a>
+            <a href="#">Documente</a>
+            <a href="#">Istoric</a>
+            <a href="#">Setări</a>
         </div>
 
-        <!-- Main content -->
+        <!-- Conținut principal -->
         <div class="col-md-10 p-4">
             <h2>dashboard angajatului</h2>
 
-            <div class="row g-4 mt-3">
-                <!-- Consimtamant Box -->
+            <div class="row">
                 <div class="col-md-6">
-                    <div class="card-custom">
-                        <h5>Consimțamântele mele</h5>
-                        <div class="d-flex justify-content-between align-items-center my-3">
-                            <div>
-                                <h3 class="text-success">{{ acordate }}</h3>
-                                <span>Acceptate</span>
-                            </div>
-                            <div>
-                                <h3 class="text-muted">{{ retrase }}</h3>
-                                <span>Retrase</span>
-                            </div>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Consimțămintele mele</h5>
+                            <p><strong>0</strong> Acceptate</p>
+                            <p><strong>0</strong> Retrase</p>
+                            <a href="/consimtamant" class="btn btn-primary w-100">Vizualizează consimțământul</a>
                         </div>
-                        <a href="/consimtamant" class="btn btn-primary w-100">Vizualizează consimțământul</a>
-
                     </div>
                 </div>
 
-                <!-- Descarca documente -->
+                <!-- Termen expirare consimțământ -->
                 <div class="col-md-6">
-                    <div class="card-custom">
-                        <h5>Descarcă documente</h5>
-                        <button class="btn btn-primary mt-3">Descarcă</button>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">📆 Termen expirare consimțământ</h5>
+                            <p>Consimțământul pentru <strong>doc1</strong> expiră în <strong>16 zile</strong>.</p>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Istoric actiuni -->
-                <div class="col-md-6">
-                    <div class="card-custom">
-                        <h5>Istoric acțiuni</h5>
-                        <ul class="list-unstyled mt-3">
-                            <li><i class="fas fa-user-slash"></i> Retragere consimțamânt <span class="float-end text-muted">Astăzi, 10:45</span></li>
-                            <li><i class="fas fa-user-check"></i> Consimțamânt acordat <span class="float-end text-muted">Astăzi, 09:15</span></li>
-                            <li><i class="fas fa-user-check"></i> Consimțamânt acordat <span class="float-end text-muted">Ieri, 14:30</span></li>
-                            <li><i class="fas fa-file-download"></i> Document descărcat <span class="float-end text-muted">Ieri, 11:00</span></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Notificari -->
-                <div class="col-md-6">
-                    <div class="card-custom">
-                        <h5>Notificări</h5>
-                        <ul class="list-unstyled mt-3">
-                            <li class="notification-item"><i class="fas fa-sync-alt"></i> Actualizare consimțamânt <span class="float-end text-muted">Acum 2 zile</span></li>
-                            <li class="notification-item"><i class="fas fa-file"></i> Document nou disponibil <span class="float-end text-muted">Acum 5 zile</span></li>
-                            <li class="notification-item"><i class="fas fa-key"></i> Schimbare parolă efectuată <span class="float-end text-muted">Acum 1 săptămână</span></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Date personale -->
-                <div class="col-md-12">
-                    <div class="card-custom">
-                        <h5><i class="fas fa-user"></i> Date peroale</h5>
-                        <p class="mt-3">
-    Nume: {{ nume }}<br>
-    Email: {{ email }}<br>
-    Funcție: {{ functie }}
-</p>
-
-                    </div>
-                </div>
-
             </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Istoric acțiuni</h5>
+                            <ul class="list-unstyled">
+                                <li>⚒️ Retragere consimțământ <span class="text-muted float-end">Astăzi, 10:45</span></li>
+                                <li>👤 Consimțământ acordat <span class="text-muted float-end">Astăzi, 09:15</span></li>
+                                <li>👤 Consimțământ acordat <span class="text-muted float-end">Ieri, 14:30</span></li>
+                                <li>📄 Document descărcat <span class="text-muted float-end">Ieri, 11:00</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Notificări</h5>
+                            <ul class="list-unstyled">
+                                <li>🔄 Actualizare consimțământ <span class="text-muted float-end">Acum 2 zile</span></li>
+                                <li>📄 Document nou disponibil <a href="/acorda_consimtamant" class="btn btn-sm btn-outline-primary float-end">Acordă</a></li>
+                                <li>🔑 Schimbare parolă efectuată <span class="text-muted float-end">Acum 1 săptămână</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">👤 Date personale</h5>
+                            <p>Nume: Ion Popescu</p>
+                            <p>Email: angajat@example.com</p>
+                            <p>Funcție: Operator</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
