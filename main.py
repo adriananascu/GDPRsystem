@@ -33,6 +33,9 @@ db = psycopg2.connect(
 def home():
     return render_template('home.html')
 
+@app.route('/login', methods=['GET'])
+def login_get():
+    return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
 def login():
