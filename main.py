@@ -70,13 +70,11 @@ def dashboard():
 
         # Date angajat
         cursor.execute("SELECT nume, functie FROM users WHERE email = %s", (email,))
-
         user = cursor.fetchone()
         if not user:
             return redirect(url_for('logout'))
         nume = user['nume']
         functie = user['functie']
-
 
         # Consimțăminte acordate
         cursor.execute("SELECT COUNT(*) AS total FROM consimtamant_extins WHERE email = %s AND status = 'acordat'", (email,))
@@ -86,16 +84,30 @@ def dashboard():
         cursor.execute("SELECT COUNT(*) AS total FROM consimtamant_extins WHERE email = %s AND status = 'retras'", (email,))
         retrase = cursor.fetchone()['total']
 
+        # Consimțăminte expirate (neacordate de peste 30 zile)
+        cursor.execute("""
+            SELECT data_acordarii FROM consimtamant_extins
+            WHERE email = %s AND status = 'neacordat'
+        """, (email,))
+        neacordate = cursor.fetchall()
+
+        expirate = 0
+        for row in neacordate:
+            if row['data_acordarii'] and (datetime.now() - row['data_acordarii']) > timedelta(days=30):
+                expirate += 1
+
         return render_template(
             'dashboard_angajat.html',
             email=email,
             nume=nume,
             functie=functie,
             acordate=acordate,
-            retrase=retrase
+            retrase=retrase,
+            expirate=expirate
         )
     else:
         return redirect(url_for('home'))
+
 
 
 @app.route('/setari')

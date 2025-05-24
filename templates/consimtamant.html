@@ -75,7 +75,7 @@
     </style>
 </head>
 <body>
-    <h2>Consimțamîntele tale, {{ email }}</h2>
+    <h2>Consimțamintele tale, {{ email }}</h2>
 
     {% if consimtaminte %}
     <table>
@@ -116,11 +116,11 @@
         {% endfor %}
     </table>
     {% else %}
-        <p class="no-data">Nu există consimțamînte înregistrate pentru acest utilizator.</p>
+        <p class="no-data">Nu există consimțăminte înregistrate pentru acest utilizator.</p>
     {% endif %}
 
     <div class="back-link">
-        <a href="{{ url_for('dashboard') }}">← Îneapoi la Dashboard</a>
+        <a href="{{ url_for('dashboard') }}">← Înapoi la Dashboard</a>
     </div>
 </body>
 </html>

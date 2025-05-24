@@ -37,7 +37,6 @@
         }
     </style>
 </head>
-
 <body>
 <div class="container-fluid">
     <div class="row">
@@ -46,17 +45,13 @@
             <h4 class="text-center py-3">Consimțământul personal</h4>
             <a href="/consimtamant">Consimțăminte</a>
             <a href="{{ url_for('documente') }}">📄 Documente</a>
-
             <a href="#">Istoric</a>
             <a href="/setari">Setări</a>
         </div>
 
         <!-- Conținut principal -->
         <div class="col-md-10 p-4">
-
-            
-
-            <h2>dashboard angajatului</h2>
+            <h2>Dashboard angajatului</h2>
 
             <div class="row">
                 <div class="col-md-6">
@@ -70,12 +65,15 @@
                     </div>
                 </div>
 
-                <!-- Termen expirare consimțământ -->
                 <div class="col-md-6">
                     <div class="card mb-4">
                         <div class="card-body">
-                            <h5 class="card-title">📆 Termen expirare consimțământ</h5>
-                            <p>Consimțământul pentru <strong>doc1</strong> expiră în <strong>16 zile</strong>.</p>
+                            <h5 class="card-title">🗖️ Termen expirare consimțământ</h5>
+                            {% if expirate > 0 %}
+                                <p class="text-danger">Ai <strong>{{ expirate }}</strong> consimțăminte expirate!</p>
+                            {% else %}
+                                <p class="text-success">Niciun consimțământ nu a expirat.</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -102,7 +100,7 @@
                             <h5 class="card-title">Notificări</h5>
                             <ul class="list-unstyled">
                                 <li>🔄 Actualizare consimțământ <span class="text-muted float-end">Acum 2 zile</span></li>
-                                <li>📄 Document nou disponibil <a href="/acorda_consimtamant" class="btn btn-sm btn-outline-primary float-end">Acordă</a></li>
+                                <li>📄 Document nou disponibil <a href="/documente" class="btn btn-sm btn-outline-primary float-end">Acordă</a></li>
                                 <li>🔑 Schimbare parolă efectuată <span class="text-muted float-end">Acum 1 săptămână</span></li>
                             </ul>
                         </div>
@@ -122,7 +120,6 @@
                     </div>
                 </div>
             </div>
-
 
         </div>
     </div>
