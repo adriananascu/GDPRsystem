@@ -284,10 +284,23 @@ def modifica_status():
     status_nou = request.form['status']
 
     cursor = db.cursor()
-    cursor.execute("UPDATE consimtamant_extins SET status = %s WHERE id = %s", (status_nou, id_consimtamant))
-    db.commit()
 
+    if status_nou == 'acordat':
+        cursor.execute("""
+            UPDATE consimtamant_extins
+            SET status = %s, data_acordarii = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (status_nou, id_consimtamant))
+    else:
+        cursor.execute("""
+            UPDATE consimtamant_extins
+            SET status = %s, data_acordarii = NULL
+            WHERE id = %s
+        """, (status_nou, id_consimtamant))
+
+    db.commit()
     return redirect(url_for('consimtamant'))
+
 
 @app.route('/logout')
 def logout():

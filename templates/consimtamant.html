@@ -7,7 +7,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="mb-4 text-center text-primary">Consimțtămintele tale, {{ email }}</h2>
+        <h2 class="mb-4 text-center text-primary">Consimțămintele tale, {{ email }}</h2>
 
         {% if consimtaminte %}
         <table class="table table-bordered table-striped">
@@ -38,9 +38,11 @@
                         <form method="post" action="/modifica_status">
                             <input type="hidden" name="id" value="{{ c.id }}">
                             <select name="status" class="form-select form-select-sm d-inline w-auto">
+                                <option value="neacordat" {% if c.status == 'neacordat' %}selected{% endif %}>Neacordat</option>
                                 <option value="acordat" {% if c.status == 'acordat' %}selected{% endif %}>Acordat</option>
                                 <option value="retras" {% if c.status == 'retras' %}selected{% endif %}>Retras</option>
                             </select>
+
                             <button type="submit" class="btn btn-sm btn-primary">Actualizează</button>
                         </form>
                     </td>
