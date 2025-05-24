@@ -10,29 +10,40 @@
         <h3 class="mb-4">📄 Documente disponibile pentru semnare</h3>
 
         {% if documente %}
-        <table class="table table-bordered">
-            <thead class="table-primary">
-                <tr>
-                    <th>Nume fișier</th>
-                    <th>Scop</th>
-                    <th>Acțiune</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doc in documente %}
-                <tr>
-                    <td>{{ doc.nume_fisier }}</td>
-                    <td>{{ doc.scop }}</td>
-                    <td>
-                        <a href="/{{ doc.cale_fisier }}" class="btn btn-sm btn-outline-primary" download>Descarcă</a>
-                        <a href="/acorda_consimtamant/{{ doc.id }}" class="btn btn-sm btn-success ms-2">Acordă consimțământ</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            {% if documente|length > 0 %}
+                <table class="table table-bordered">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Nume fișier</th>
+                            <th>Scop</th>
+                            <th>Acțiune</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documente %}
+                        <tr>
+                            <td>{{ doc.nume_fisier }}</td>
+                            <td>{{ doc.scop }}</td>
+                            <td>
+                                <a href="/{{ doc.cale_fisier }}" class="btn btn-sm btn-outline-primary" download>Descarcă</a>
+                                <a href="/acorda_consimtamant/{{ doc.id }}" class="btn btn-sm btn-success ms-2">Acordă consimțământ</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center mt-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" fill="#6c757d" class="mb-4" viewBox="0 0 16 16">
+                        <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6.5L9.5 0H4zm7 7a1 1 0 0 1-1 1H6a1 1 0 0 1 0-2h1v-.5a.5.5 0 0 1 1 0V6h1a1 1 0 0 1 1 1zm-2 5a.5.5 0 0 1-1 0 .5.5 0 0 1 1 0z"/>
+                    </svg>
+                    <p class="fs-5 text-muted">📭 Niciun document disponibil pentru semnare în acest moment.</p>
+                </div>
+            {% endif %}
         {% else %}
-        <div class="alert alert-warning">Nu există documente încărcate.</div>
+            <div class="alert alert-danger text-center">
+                ⚠️ A apărut o problemă la încărcarea documentelor.
+            </div>
         {% endif %}
 
         <a href="{{ url_for('dashboard') }}" class="btn btn-link mt-3">← Înapoi la dashboard</a>
