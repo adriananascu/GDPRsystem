@@ -133,6 +133,28 @@ def schimba_parola():
 
     return render_template("schimba_parola.html", mesaj=mesaj, eroare=eroare)
 
+@app.route('/sterge_cont', methods=['GET', 'POST'])
+def sterge_cont():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        email = session['email']
+
+        cursor = db.cursor()
+
+        # Șterge consimțăminte legate de utilizator
+        cursor.execute("DELETE FROM consimtamant_extins WHERE email = %s", (email,))
+
+        # Șterge utilizatorul
+        cursor.execute("DELETE FROM users WHERE email = %s", (email,))
+        db.commit()
+
+        session.clear()
+        return redirect(url_for('home', mesaj='Contul a fost șters cu succes.'))
+
+    return render_template('confirmare_stergere.html', email=session['email'])
+
 
 @app.route('/salveaza_consimtamant', methods=['POST'])
 def salveaza_consimtamant():
