@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmă ștergerea contului</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-body text-center">
+            <h4 class="mb-4 text-danger">🗑️ Ștergere cont</h4>
+            <p>Sigur vrei să ștergi definitiv contul asociat cu emailul <strong>{{ email }}</strong>?</p>
+            <form method="POST">
+                <button type="submit" class="btn btn-danger">Confirmă ștergerea</button>
+                <a href="/setari" class="btn btn-secondary ms-2">Anulează</a>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
