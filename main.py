@@ -408,7 +408,11 @@ def admin_dashboard():
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
+    if 'email' not in session and 'admin_email' not in session:
+        return "Unauthorized", 401
+
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 @app.route('/upload_document', methods=['POST'])
 def upload_document():
@@ -434,10 +438,10 @@ def upload_document():
         cursor = db.cursor()
         scop = request.form.get('scop')
 
-        # 1. Salvăm documentul în tabela "documente"
+        # 1. Salvăm documentul în tabela "documente" (doar numele, nu calea completă!)
         cursor.execute(
             "INSERT INTO documente (nume_fisier, cale_fisier, scop) VALUES (%s, %s, %s) RETURNING id",
-            (filename, filepath, scop)
+            (filename, filename, scop)
         )
         document_id = cursor.fetchone()[0]
 
