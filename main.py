@@ -406,7 +406,7 @@ def admin_dashboard():
         expirate_count=expirate_count
     )
 
-@app.route('/uploads/<filename>')
+@app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
