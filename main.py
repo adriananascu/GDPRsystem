@@ -225,21 +225,25 @@ def consimtamant():
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
-        SELECT ce.id, ce.status, ce.scop, ce.data_acordarii, ce.ip, ce.locatie,
-               d.cale_fisier AS document_url
+        SELECT DISTINCT ON (ce.document_id) 
+            ce.id,
+            ce.status,
+            ce.scop,
+            ce.data_acordarii,
+            ce.ip,
+            ce.locatie,
+            d.nume_fisier,
+            d.cale_fisier AS document_url
         FROM consimtamant_extins ce
-        LEFT JOIN documente d ON ce.document_id = d.id
+        JOIN documente d ON ce.document_id = d.id
         WHERE ce.email = %s
-        ORDER BY ce.data_acordarii DESC
+        ORDER BY ce.document_id, ce.data_acordarii DESC
     """, (email,))
-    
+
     consimtaminte = cursor.fetchall()
 
-    return render_template(
-        'consimtamant.html',
-        email=email,
-        consimtaminte=consimtaminte
-    )
+    return render_template('consimtamant.html', email=email, consimtaminte=consimtaminte)
+
 
 
 

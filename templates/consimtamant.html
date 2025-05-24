@@ -2,132 +2,59 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>Consimțămintele Tale</title>
+    <title>Consimțtămintele tale</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            background-color: #f4f6f8;
-        }
-
-        h2 {
-            color: #1976d2;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #1976d2;
-            color: white;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .no-data {
-            text-align: center;
-            color: #777;
-            font-style: italic;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 30px;
-            font-weight: bold;
-        }
-
-        .back-link a {
-            text-decoration: none;
-            color: #1976d2;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-
-        .form-button {
-            border: none;
-            background-color: #1976d2;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .form-button:hover {
-            background-color: #125ea3;
-        }
-
-        .btn-sm {
-            padding: 4px 8px;
-            font-size: 0.85rem;
-        }
-    </style>
 </head>
-<body>
-    <h2>Consimțămintele tale, {{ email }}</h2>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center text-primary">Consimțtămintele tale, {{ email }}</h2>
 
-    {% if consimtaminte %}
-    <table>
-        <tr>
-            <th>Status</th>
-            <th>Scop</th>
-            <th>Data acordării</th>
-            <th>IP</th>
-            <th>Locație</th>
-            <th>Document</th>
-            <th>Acțiune</th>
-        </tr>
-        {% for c in consimtaminte %}
-        <tr>
-            <td>{{ c.status }}</td>
-            <td>{{ c.scop }}</td>
-            <td>{{ c.data_acordarii }}</td>
-            <td>{{ c.ip }}</td>
-            <td>{{ c.locatie }}</td>
-            <td>
-                {% if c.document_url %}
-                    <a href="/{{ c.document_url }}" target="_blank" class="btn btn-sm btn-outline-primary">Vezi</a>
-                    <a href="/{{ c.document_url }}" download class="btn btn-sm btn-outline-secondary ms-1">Descarcă</a>
-                {% else %}
-                    <span class="text-muted">Indisponibil</span>
-                {% endif %}
-            </td>
-            <td>
-                <form method="post" action="/modifica_status">
-                    <input type="hidden" name="id" value="{{ c.id }}">
-                    <select name="status">
-                        <option value="acordat" {% if c.status == 'acordat' %}selected{% endif %}>Acordat</option>
-                        <option value="retras" {% if c.status == 'retras' %}selected{% endif %}>Retras</option>
-                    </select>
-                    <button type="submit" class="form-button">Actualizează</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-        <p class="no-data">Nu există consimțăminte înregistrate pentru acest utilizator.</p>
-    {% endif %}
+        {% if consimtaminte %}
+        <table class="table table-bordered table-striped">
+            <thead class="table-primary">
+                <tr>
+                    <th>Status</th>
+                    <th>Scop</th>
+                    <th>Data acordării</th>
+                    <th>IP</th>
+                    <th>Locație</th>
+                    <th>Document</th>
+                    <th>Acțiune</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in consimtaminte %}
+                <tr>
+                    <td>{{ c.status }}</td>
+                    <td>{{ c.scop }}</td>
+                    <td>{{ c.data_acordarii or '-' }}</td>
+                    <td>{{ c.ip or '-' }}</td>
+                    <td>{{ c.locatie or '-' }}</td>
+                    <td>
+                        <a href="/{{ c.cale_fisier }}" target="_blank" class="btn btn-sm btn-outline-primary">Vezi</a>
+                        <a href="/{{ c.cale_fisier }}" download class="btn btn-sm btn-outline-secondary">Descarcă</a>
+                    </td>
+                    <td>
+                        <form method="post" action="/modifica_status">
+                            <input type="hidden" name="id" value="{{ c.id }}">
+                            <select name="status" class="form-select form-select-sm d-inline w-auto">
+                                <option value="acordat" {% if c.status == 'acordat' %}selected{% endif %}>Acordat</option>
+                                <option value="retras" {% if c.status == 'retras' %}selected{% endif %}>Retras</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Actualizează</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="alert alert-info text-center">Nu ai consimțtăminte salvate momentan.</div>
+        {% endif %}
 
-    <div class="back-link">
-        <a href="{{ url_for('dashboard') }}">← Înapoi la Dashboard</a>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-link">&larr; Înapoi la Dashboard</a>
+        </div>
     </div>
 </body>
 </html>
