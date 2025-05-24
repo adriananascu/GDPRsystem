@@ -2,130 +2,139 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <title>Dashboard Angajat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-image: url("/static/poza.jpeg");
-            background-size: cover;
-            background-position: center;
+            background-color: #e9ecef;
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        }
+        .sidebar {
             height: 100vh;
-        }
-
-        .dashboard-container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.15);
-            max-width: 500px;
-            width: 100%;
-        }
-
-        h2 {
-            text-align: center;
-            color: #1976d2;
-            margin-bottom: 30px;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        input[type="checkbox"] {
-            transform: scale(1.2);
-            margin-right: 10px;
-        }
-
-        .consent-status {
-            margin-top: 15px;
-            font-style: italic;
-            color: #555;
-        }
-
-        button {
-            background-color: #1976d2;
+            background-color: #052c65;
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            margin-top: 20px;
-            cursor: pointer;
         }
-
-        button:hover {
-            background-color: #125a9c;
-        }
-
-        .logout-link {
+        .sidebar a {
+            color: white;
             display: block;
-            text-align: center;
-            margin-top: 25px;
-            color: #1976d2;
+            padding: 15px;
             text-decoration: none;
         }
-
-        .link-consimtamant {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
+        .sidebar a:hover {
+            background-color: #031d42;
         }
-
-        .link-consimtamant a {
-            color: #1976d2;
-            text-decoration: none;
-            font-weight: bold;
-            display: block;
-            margin: 8px 0;
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        .link-consimtamant a:hover {
-            text-decoration: underline;
+        .card-title {
+            color: #0d6efd;
+        }
+        h2 {
+            color: #052c65;
+            margin-bottom: 20px;
         }
     </style>
 </head>
+
 <body>
-    <div class="dashboard-container">
-        <h2>Bine ai venit, {{ email }}!</h2>
-
-        <form action="{{ url_for('salveaza_consimtamant') }}" method="post">
-            <label>
-                <input type="checkbox" name="consimtamant" id="consimtamant" onchange="actualizeazaStatus()">
-                Sunt de acord cu prelucrarea datelor mele personale
-            </label>
-
-            <p class="consent-status" id="status-text">Stare actuală: consimțământ neacordat</p>
-
-            <button type="submit">Salvează consimțământul</button>
-        </form>
-
-        <div class="link-consimtamant">
-            <a href="{{ url_for('consimtamant') }}">📝 Vezi consimțămintele tale</a>
-            <a href="/vizualizeaza_consimtamant">📄 Vizualizează consimțământul curent</a>
-            <a href="/documente">📁 Documentele tale disponibile</a> <!-- ✅ NOU -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- Bara laterală -->
+        <div class="col-md-2 sidebar">
+            <h4 class="text-center py-3">Consimțământul personal</h4>
+            <a href="/consimtamant">Consimțăminte</a>
+            <a href="{{ url_for('documente') }}">📄 Documente</a>
+            <a href="#">Istoric</a>
+            <a href="/setari">Setări</a>
         </div>
 
-        <a href="/logout" class="logout-link">→ Logout</a>
+        <!-- Conținut principal -->
+        <div class="col-md-10 p-4">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Închide"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <h2>Dashboard angajatului</h2>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Consimțămintele mele</h5>
+                            <p><strong>{{ acordate }}</strong> Acceptate</p>
+                            <p><strong>{{ retrase }}</strong> Retrase</p>
+                            <a href="/consimtamant" class="btn btn-primary w-100">Vizualizează consimțământul</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">📆 Termen expirare consimțământ</h5>
+                            <p>Consimțământul pentru <strong>doc1</strong> expiră în <strong>16 zile</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Istoric acțiuni</h5>
+                            <ul class="list-unstyled">
+                                <li>⚒️ Retragere consimțământ <span class="text-muted float-end">Astăzi, 10:45</span></li>
+                                <li>👤 Consimțământ acordat <span class="text-muted float-end">Astăzi, 09:15</span></li>
+                                <li>👤 Consimțământ acordat <span class="text-muted float-end">Ieri, 14:30</span></li>
+                                <li>📄 Document descărcat <span class="text-muted float-end">Ieri, 11:00</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Notificări</h5>
+                            <ul class="list-unstyled">
+                                <li>🔄 Actualizare consimțământ <span class="text-muted float-end">Acum 2 zile</span></li>
+                                <li>📄 Document nou disponibil <a href="/documente" class="btn btn-sm btn-outline-primary float-end">Acordă</a></li>
+                                <li>🔑 Schimbare parolă efectuată <span class="text-muted float-end">Acum 1 săptămână</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">👤 Date personale</h5>
+                            <p><strong>Nume:</strong> {{ nume }}</p>
+                            <p><strong>Email:</strong> {{ email }}</p>
+                            <p><strong>Funcție:</strong> {{ functie }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
+</div>
 
-    <script>
-        function actualizeazaStatus() {
-            const checkbox = document.getElementById('consimtamant');
-            const statusText = document.getElementById('status-text');
-
-            if (checkbox.checked) {
-                statusText.textContent = "Stare actuală: consimțământ acordat ✅";
-            } else {
-                statusText.textContent = "Stare actuală: consimțământ neacordat ❌";
-            }
-        }
-    </script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
