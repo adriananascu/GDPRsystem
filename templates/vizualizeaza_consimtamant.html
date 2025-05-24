@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Vizualizează Consimțământ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f4f8;
+            padding: 40px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2f3e9e;
+            margin-bottom: 20px;
+        }
+        .form-check {
+            margin: 20px 0;
+        }
+        .btn {
+            background: #1976d2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📄 Consimțământ: {{ document.scop }}</h2>
+
+        <p><a href="/{{ document.cale_fisier }}" target="_blank">📂 Deschide documentul</a></p>
+
+        <form method="post" action="/salveaza_consimtamant">
+            <div class="form-check">
+                <input type="checkbox" name="consimtamant" id="consimtamant">
+                <label for="consimtamant">Sunt de acord cu acest consimțământ.</label>
+            </div>
+            <button type="submit" class="btn">✔️ Salvează consimțământul</button>
+        </form>
+    </div>
+</body>
+</html>

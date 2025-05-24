@@ -82,6 +82,8 @@
             color: #1976d2;
             text-decoration: none;
             font-weight: bold;
+            display: block;
+            margin: 8px 0;
         }
 
         .link-consimtamant a:hover {
@@ -107,7 +109,7 @@
         <div class="link-consimtamant">
             <a href="{{ url_for('consimtamant') }}">📝 Vezi consimțămintele tale</a>
             <a href="/vizualizeaza_consimtamant">📄 Vizualizează consimțământul curent</a>
-
+            <a href="/documente">📁 Documentele tale disponibile</a> <!-- ✅ NOU -->
         </div>
 
         <a href="/logout" class="logout-link">→ Logout</a>
