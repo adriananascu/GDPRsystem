@@ -557,7 +557,7 @@ def acorda_consimtamant(document_id):
     email = session['email']
     ip = request.remote_addr
     user_agent = request.user_agent.string
-    locatie = "RO"  # poți adăuga geolocalizare dacă vrei mai târziu
+    locatie = "RO"
     pagina_origine = request.referrer or request.url
     rol = 'angajat'
 
@@ -565,12 +565,12 @@ def acorda_consimtamant(document_id):
     cursor.execute("""
         INSERT INTO consimtamant_extins (
             email, status, scop, tip_consimtamant, data_acordarii,
-            ip, user_agent, locatie, pagina_origine, rol, department, document_id
+            ip, user_agent, locatie, pagina_origine, rol, departament, document_id
         )
         SELECT %s, %s, d.scop, %s, CURRENT_TIMESTAMP,
-               %s, %s, %s, %s, %s, a.departament, d.id
+               %s, %s, %s, %s, %s, u.functie, d.id
         FROM documente d
-        JOIN angajati a ON a.email = %s
+        JOIN users u ON u.email = %s
         WHERE d.id = %s
     """, (
         email, 'acordat', 'explicit',
@@ -581,6 +581,7 @@ def acorda_consimtamant(document_id):
 
     flash('Consimțământul a fost salvat cu succes!', 'success')
     return redirect(url_for('documente'))
+
 
 
 
