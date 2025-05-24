@@ -225,15 +225,22 @@ def consimtamant():
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
-        SELECT id, status, scop, data_acordarii, ip, locatie, '' AS document_url
-        FROM consimtamant_extins
-        WHERE email = %s
-        ORDER BY data_acordarii DESC
+        SELECT ce.id, ce.status, ce.scop, ce.data_acordarii, ce.ip, ce.locatie,
+               d.cale_fisier AS document_url
+        FROM consimtamant_extins ce
+        LEFT JOIN documente d ON ce.document_id = d.id
+        WHERE ce.email = %s
+        ORDER BY ce.data_acordarii DESC
     """, (email,))
     
     consimtaminte = cursor.fetchall()
 
-    return render_template('consimtamant.html', email=email, consimtaminte=consimtaminte)
+    return render_template(
+        'consimtamant.html',
+        email=email,
+        consimtaminte=consimtaminte
+    )
+
 
 
 @app.route('/admin_consimtamant')
