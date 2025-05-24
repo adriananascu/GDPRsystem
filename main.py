@@ -183,11 +183,11 @@ def salveaza_consimtamant():
     data_acordarii = datetime.now()
     ip = request.remote_addr
     user_agent = request.headers.get('User-Agent')
-    locatie = 'RO'  # Poți adăuga detectare reală
+    locatie = 'RO' 
     pagina_origine = request.referrer
     rol = 'angajat'
-    departament = 'Resurse Umane'  # Poți seta din DB dacă vrei
-    scop = 'utilizare_imagine_angajat'  # sau altul selectat
+    departament = 'Resurse Umane' 
+    scop = 'utilizare_imagine_angajat'
 
     # Obține ultimul document încărcat
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -598,11 +598,42 @@ def acorda_consimtamant(document_id):
     ))
     db.commit()
 
-    flash('Consimțământul a fost salvat cu succes!', 'success')
+    flash('Consimțământul a fost acordat cu succes!', 'success')
     return redirect(url_for('documente'))
 
 
+@app.route('/refuza_consimtamant/<int:document_id>')
+def refuza_consimtamant(document_id):
+    if 'email' not in session:
+        return redirect(url_for('login'))
 
+    email = session['email']
+    ip = request.remote_addr
+    user_agent = request.user_agent.string
+    locatie = "RO"
+    pagina_origine = request.referrer or request.url
+    rol = 'angajat'
+
+    cursor = db.cursor()
+    cursor.execute("""
+        INSERT INTO consimtamant_extins (
+            email, status, scop, tip_consimtamant, data_acordarii,
+            ip, user_agent, locatie, pagina_origine, rol, departament, document_id
+        )
+        SELECT %s, %s, d.scop, %s, CURRENT_TIMESTAMP,
+               %s, %s, %s, %s, %s, u.functie, d.id
+        FROM documente d
+        JOIN users u ON u.email = %s
+        WHERE d.id = %s
+    """, (
+        email, 'neacordat', 'explicit',
+        ip, user_agent, locatie, pagina_origine, rol,
+        email, document_id
+    ))
+    db.commit()
+
+    flash('Consimțământul a fost refuzat cu succes!', 'info')
+    return redirect(url_for('documente'))
 
 @app.route('/api/consimtamant/<email>', methods=['GET'])
 def get_consimtamant(email):
