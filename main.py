@@ -174,45 +174,31 @@ def sterge_cont():
 
 @app.route('/salveaza_consimtamant', methods=['POST'])
 def salveaza_consimtamant():
-    if 'email' not in session:
-        return redirect(url_for('home'))
+    if 'email' not in session or 'company_id' not in session:
+        return redirect(url_for('login'))
 
     email = session['email']
-    status = 'acordat' if 'consimtamant' in request.form else 'neacordat'
-    tip_consimtamant = 'explicit'
+    company_id = session['company_id']
+    document_id = request.form.get('document_id')
+    acordat = request.form.get('acordat')  # 'on' dacă e bifat
+
+    status = 'acordat' if acordat == 'on' else 'neacordat'
     data_acordarii = datetime.now()
     ip = request.remote_addr
     user_agent = request.headers.get('User-Agent')
-    locatie = 'RO' 
-    pagina_origine = request.referrer
-    rol = 'angajat'
-    departament = 'Resurse Umane' 
-    scop = 'utilizare_imagine_angajat'
 
-    # Obține ultimul document încărcat
-    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute("SELECT id FROM documente ORDER BY id DESC LIMIT 1")
-    document = cursor.fetchone()
-    document_id = document['id'] if document else None
+    cursor = db.cursor()
 
-    if document_id is None:
-        session['upload_error'] = "Nu există niciun document activ!"
-        return redirect(url_for('dashboard'))
-
-    # Salvează consimțământul
+    # Actualizăm doar dacă înregistrarea există și e din compania utilizatorului
     cursor.execute("""
-        INSERT INTO consimtamant_extins (
-            email, status, scop, tip_consimtamant, data_acordarii,
-            ip, user_agent, locatie, pagina_origine, rol, departament, document_id
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (
-        email, status, scop, tip_consimtamant, data_acordarii,
-        ip, user_agent, locatie, pagina_origine, rol, departament, document_id
-    ))
+        UPDATE consimtamant_extins
+        SET status = %s, data_acordarii = %s, ip = %s, user_agent = %s
+        WHERE email = %s AND document_id = %s AND company_id = %s
+    """, (status, data_acordarii, ip, user_agent, email, document_id, company_id))
 
     db.commit()
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('documente'))
+
 
 
 
@@ -249,29 +235,35 @@ def consimtamant():
 
 @app.route('/admin_consimtamant')
 def admin_consimtamant():
-    if 'admin_email' not in session:
-        return redirect(url_for('home'))
+    if 'admin_email' not in session or 'company_id' not in session:
+        return redirect(url_for('admin_login'))
 
+    company_id = session['company_id']
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    cursor.execute("SELECT * FROM documente")
+    # Afișăm doar documentele companiei
+    cursor.execute("SELECT * FROM documente WHERE company_id = %s", (company_id,))
     documente = cursor.fetchall()
 
     for doc in documente:
-        # obține numărul de angajați care au semnat pentru fiecare document
+        doc_id = doc['id']
+
+        # Număr consimțăminte acordate pentru acel document
         cursor.execute("""
             SELECT COUNT(*) FROM consimtamant_extins 
-            WHERE scop = %s AND status = 'acordat'
-        """, (doc['scop'],))
+            WHERE document_id = %s AND status = 'acordat' AND company_id = %s
+        """, (doc_id, company_id))
         doc['semnate'] = cursor.fetchone()['count']
 
+        # Număr consimțăminte neacordate pentru acel document
         cursor.execute("""
             SELECT COUNT(*) FROM consimtamant_extins 
-            WHERE scop = %s AND status = 'neacordat'
-        """, (doc['scop'],))
+            WHERE document_id = %s AND status = 'neacordat' AND company_id = %s
+        """, (doc_id, company_id))
         doc['nesemnate'] = cursor.fetchone()['count']
 
     return render_template('admin_consimtamant.html', documente=documente)
+
 
 
 
@@ -322,6 +314,7 @@ def admin_login():
 
         if admin and check_password_hash(admin['password'], parola):
             session['admin_email'] = email
+            session['company_id'] = admin['company_id']
             return redirect(url_for('admin_dashboard_full'))
         else:
             error = "Email sau parolă greșite."
@@ -360,19 +353,21 @@ def admin_register():
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    if 'admin_email' not in session:
+    if 'admin_email' not in session or 'company_id' not in session:
         return redirect(url_for('admin_login'))
 
+    company_id = session['company_id']
     email_filter = request.args.get('email')
     status_filter = request.args.get('status')
 
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
     query = """
         SELECT email, status, scop, tip_consimtamant, data_acordarii, ip, locatie, departament
         FROM consimtamant_extins
-        WHERE 1=1
+        WHERE company_id = %s
     """
-    values = []
+    values = [company_id]
 
     if email_filter:
         query += " AND email LIKE %s"
@@ -406,6 +401,7 @@ def admin_dashboard():
         expirate_count=expirate_count
     )
 
+
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     if 'email' not in session and 'admin_email' not in session:
@@ -416,8 +412,10 @@ def uploaded_file(filename):
 
 @app.route('/upload_document', methods=['POST'])
 def upload_document():
-    if 'admin_email' not in session:
+    if 'admin_email' not in session or 'company_id' not in session:
         return redirect(url_for('admin_login'))
+
+    company_id = session['company_id']
 
     if 'document' not in request.files:
         session['upload_error'] = "Nu s‑a selectat niciun fișier."
@@ -438,32 +436,31 @@ def upload_document():
         cursor = db.cursor()
         scop = request.form.get('scop')
 
-        # 1. Salvăm documentul în tabela "documente" (doar numele, nu calea completă!)
+        # 1. Salvăm documentul cu company_id
         cursor.execute(
-            "INSERT INTO documente (nume_fisier, cale_fisier, scop) VALUES (%s, %s, %s) RETURNING id",
-            (filename, filename, scop)
+            "INSERT INTO documente (nume_fisier, cale_fisier, scop, company_id) VALUES (%s, %s, %s, %s) RETURNING id",
+            (filename, filename, scop, company_id)
         )
         document_id = cursor.fetchone()[0]
 
-        # 2. Selectăm toți angajații existenți
-        cursor.execute("SELECT email FROM users WHERE role = 'angajat'")
+        # 2. Selectăm doar angajații din compania curentă
+        cursor.execute("SELECT email FROM users WHERE role = 'angajat' AND company_id = %s", (company_id,))
         angajati = cursor.fetchall()
 
-        # 3. Inserăm un rând în consimtamant_extins pentru fiecare angajat
+        # 3. Inserăm în consimtamant_extins
         for angajat in angajati:
             email = angajat[0]
             cursor.execute("""
                 INSERT INTO consimtamant_extins (
                     email, status, scop, tip_consimtamant, data_acordarii,
-                    ip, user_agent, locatie, pagina_origine, rol, departament, document_id
+                    ip, user_agent, locatie, pagina_origine, rol, departament, document_id, company_id
                 )
-                VALUES (%s, %s, %s, %s, NULL, NULL, NULL, NULL, NULL, 'angajat', NULL, %s)
+                VALUES (%s, %s, %s, %s, NULL, NULL, NULL, NULL, NULL, 'angajat', NULL, %s, %s)
             """, (
-                email, 'neacordat', scop, 'explicit', document_id
+                email, 'neacordat', scop, 'explicit', document_id, company_id
             ))
 
         db.commit()
-
         session['upload_succes'] = f"Fișierul „{filename}” a fost încărcat cu succes!"
         return redirect(url_for('admin_dashboard'))
 
@@ -472,23 +469,25 @@ def upload_document():
 
 
 
+
 @app.route('/admin_dashboard_full')
 def admin_dashboard_full():
-    if 'admin_email' not in session:
+    if 'admin_email' not in session or 'company_id' not in session:
         return redirect(url_for('home'))
 
+    company_id = session['company_id']
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    cursor.execute("SELECT COUNT(*) AS total FROM users")
+    cursor.execute("SELECT COUNT(*) AS total FROM users WHERE company_id = %s", (company_id,))
     total_angajati = cursor.fetchone()['total']
 
-    cursor.execute("SELECT COUNT(*) AS total FROM consimtamant_extins WHERE status = 'acordat'")
+    cursor.execute("SELECT COUNT(*) AS total FROM consimtamant_extins WHERE status = 'acordat' AND company_id = %s", (company_id,))
     acordate = cursor.fetchone()['total']
 
-    cursor.execute("SELECT COUNT(*) AS total FROM consimtamant_extins WHERE status = 'retras'")
+    cursor.execute("SELECT COUNT(*) AS total FROM consimtamant_extins WHERE status = 'retras' AND company_id = %s", (company_id,))
     retrase = cursor.fetchone()['total']
 
-    cursor.execute("SELECT MAX(data_acordarii) AS ultima FROM consimtamant_extins")
+    cursor.execute("SELECT MAX(data_acordarii) AS ultima FROM consimtamant_extins WHERE company_id = %s", (company_id,))
     ultima_modificare = cursor.fetchone()['ultima']
 
     return render_template(
@@ -500,11 +499,13 @@ def admin_dashboard_full():
         admin_email=session['admin_email']
     )
 
+
 @app.route('/admin_angajati', methods=['GET', 'POST'])
 def admin_angajati():
-    if 'admin_email' not in session:
-        return redirect(url_for('home'))
+    if 'admin_email' not in session or 'company_id' not in session:
+        return redirect(url_for('admin_login'))  # sau 'home', dacă preferi
 
+    company_id = session['company_id']
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     if request.method == 'POST':
@@ -512,23 +513,25 @@ def admin_angajati():
         email = request.form['email']
         functie = request.form['functie']
         parola = request.form['parola']
-        rol = request.form['rol']  # 🆕 adăugat
+        rol = request.form['rol']
 
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         existent = cursor.fetchone()
 
-        if not existent:
+        if not existent and rol == 'angajat':  # opțional: filtrează doar angajați
             parola_hash = generate_password_hash(parola)
             cursor.execute(
-                "INSERT INTO users (nume, email, functie, password, role) VALUES (%s, %s, %s, %s, %s)",
-                (nume, email, functie, parola_hash, rol)
+                "INSERT INTO users (nume, email, functie, password, role, company_id) VALUES (%s, %s, %s, %s, %s, %s)",
+                (nume, email, functie, parola_hash, rol, company_id)
             )
             db.commit()
 
-    cursor.execute("SELECT nume, email, functie FROM users WHERE role = 'angajat'")
+    cursor.execute("SELECT nume, email, functie FROM users WHERE role = 'angajat' AND company_id = %s", (company_id,))
     angajati = cursor.fetchall()
 
     return render_template('admin_angajati.html', angajati=angajati, admin_email=session['admin_email'])
+
+
 
 
 
@@ -543,58 +546,68 @@ def lista_angajati():
 
     return render_template('angajati.html', angajati=angajati)
 
-@app.route('/adauga_angajat', methods=['GET', 'POST'])
+@app.route('/adauga_angajat', methods=['POST'])
 def adauga_angajat():
-    if 'admin_email' not in session:
-        return redirect(url_for('home'))
+    if 'admin_email' not in session or 'company_id' not in session:
+        return redirect(url_for('admin_login'))
 
-    mesaj = None
-    eroare = None
+    company_id = session['company_id']
+    email = request.form.get('email')
+    parola = request.form.get('parola')
 
-    if request.method == 'POST':
-        nume = request.form['nume']
-        email = request.form['email']
-        functie = request.form['functie']
-        parola = request.form['parola']
+    if not email or not parola:
+        session['eroare_angajat'] = "Toate câmpurile sunt obligatorii."
+        return redirect(url_for('admin_dashboard'))
 
-        cursor = db.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-        existent = cursor.fetchone()
+    hashed_password = generate_password_hash(parola)
 
-        if existent:
-            eroare = "Emailul este deja folosit."
-        else:
-            parola_hash = generate_password_hash(parola)
-            cursor.execute("""
-                INSERT INTO users (nume, email, functie, password, role)
-                VALUES (%s, %s, %s, %s, 'angajat')
-            """, (nume, email, functie, parola_hash))
-            db.commit()
-            mesaj = "Angajat adăugat cu succes!"
 
-    return render_template('adauga_angajat.html', mesaj=mesaj, eroare=eroare)
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users WHERE email = %s AND company_id = %s", (email, company_id))
+    if cursor.fetchone():
+        session['eroare_angajat'] = "Angajatul există deja în companie."
+        return redirect(url_for('admin_dashboard'))
+
+    cursor.execute(
+        "INSERT INTO users (email, parola, role, company_id) VALUES (%s, %s, 'angajat', %s)",
+        (email, hashed_password, company_id)
+    )
+    db.commit()
+
+    session['succes_angajat'] = "Angajat adăugat cu succes!"
+    return redirect(url_for('admin_dashboard'))
+
 
 @app.route('/documente')
 def documente():
-    try:
-        if 'email' not in session:
-            return redirect(url_for('login'))
-
-        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cursor.execute("SELECT * FROM documente")
-        documente = cursor.fetchall()
-
-        return render_template('documente.html', documente=documente)
-    
-    except Exception as e:
-        return f"<h2>Eroare în /documente:</h2><pre>{e}</pre>"
-
-@app.route('/acorda_consimtamant/<int:document_id>')
-def acorda_consimtamant(document_id):
-    if 'email' not in session:
+    if 'email' not in session or 'company_id' not in session:
         return redirect(url_for('login'))
 
     email = session['email']
+    company_id = session['company_id']
+
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    # Afișăm doar documentele companiei curente
+    cursor.execute("""
+        SELECT d.id, d.nume_fisier, d.scop, d.cale_fisier, ce.status, ce.data_acordarii
+        FROM documente d
+        LEFT JOIN consimtamant_extins ce ON d.id = ce.document_id AND ce.email = %s AND ce.company_id = %s
+        WHERE d.company_id = %s
+    """, (email, company_id, company_id))
+    
+    documente = cursor.fetchall()
+
+    return render_template('documente.html', documente=documente, email=email)
+
+
+@app.route('/acorda_consimtamant/<int:document_id>')
+def acorda_consimtamant(document_id):
+    if 'email' not in session or 'company_id' not in session:
+        return redirect(url_for('login'))
+
+    email = session['email']
+    company_id = session['company_id']
     ip = request.remote_addr
     user_agent = request.user_agent.string
     locatie = "RO"
@@ -605,17 +618,17 @@ def acorda_consimtamant(document_id):
     cursor.execute("""
         INSERT INTO consimtamant_extins (
             email, status, scop, tip_consimtamant, data_acordarii,
-            ip, user_agent, locatie, pagina_origine, rol, departament, document_id
+            ip, user_agent, locatie, pagina_origine, rol, departament, document_id, company_id
         )
         SELECT %s, %s, d.scop, %s, CURRENT_TIMESTAMP,
-               %s, %s, %s, %s, %s, u.functie, d.id
+               %s, %s, %s, %s, %s, u.functie, d.id, %s
         FROM documente d
         JOIN users u ON u.email = %s
-        WHERE d.id = %s
+        WHERE d.id = %s AND d.company_id = %s
     """, (
         email, 'acordat', 'explicit',
         ip, user_agent, locatie, pagina_origine, rol,
-        email, document_id
+        company_id, email, document_id, company_id
     ))
     db.commit()
 
@@ -623,12 +636,14 @@ def acorda_consimtamant(document_id):
     return redirect(url_for('documente'))
 
 
+
 @app.route('/refuza_consimtamant/<int:document_id>')
 def refuza_consimtamant(document_id):
-    if 'email' not in session:
+    if 'email' not in session or 'company_id' not in session:
         return redirect(url_for('login'))
 
     email = session['email']
+    company_id = session['company_id']
     ip = request.remote_addr
     user_agent = request.user_agent.string
     locatie = "RO"
@@ -639,22 +654,23 @@ def refuza_consimtamant(document_id):
     cursor.execute("""
         INSERT INTO consimtamant_extins (
             email, status, scop, tip_consimtamant, data_acordarii,
-            ip, user_agent, locatie, pagina_origine, rol, departament, document_id
+            ip, user_agent, locatie, pagina_origine, rol, departament, document_id, company_id
         )
         SELECT %s, %s, d.scop, %s, CURRENT_TIMESTAMP,
-               %s, %s, %s, %s, %s, u.functie, d.id
+               %s, %s, %s, %s, %s, u.functie, d.id, %s
         FROM documente d
         JOIN users u ON u.email = %s
-        WHERE d.id = %s
+        WHERE d.id = %s AND d.company_id = %s
     """, (
         email, 'neacordat', 'explicit',
         ip, user_agent, locatie, pagina_origine, rol,
-        email, document_id
+        company_id, email, document_id, company_id
     ))
     db.commit()
 
     flash('Consimțământul a fost refuzat cu succes!', 'info')
     return redirect(url_for('documente'))
+
 
 @app.route('/api/consimtamant/<email>', methods=['GET'])
 def get_consimtamant(email):
@@ -676,14 +692,23 @@ def get_consimtamant(email):
         }), 404
 @app.route('/vizualizeaza_consimtamant')
 def vizualizeaza_consimtamant():
-    if 'email' not in session:
+    if 'email' not in session or 'company_id' not in session:
         return redirect(url_for('home'))
 
+    company_id = session['company_id']
+
     cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute("SELECT * FROM documente ORDER BY id DESC LIMIT 1")
+    cursor.execute("""
+        SELECT * FROM documente 
+        WHERE company_id = %s 
+        ORDER BY id DESC 
+        LIMIT 1
+    """, (company_id,))
+    
     document = cursor.fetchone()
 
     return render_template("vizualizeaza_consimtamant.html", document=document)
+
 
 @app.route('/descarca_raport')
 def descarca_raport():
