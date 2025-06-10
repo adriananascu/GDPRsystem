@@ -31,8 +31,8 @@
                     <td>{{ c.ip or '-' }}</td>
                     <td>{{ c.locatie or '-' }}</td>
                     <td>
-                        <a href="{{ url_for('uploaded_file', filename=c.cale_fisier) }}" target="_blank" class="btn btn-sm btn-outline-primary">Vezi</a>
-                        <a href="{{ url_for('uploaded_file', filename=c.cale_fisier) }}" download class="btn btn-sm btn-outline-secondary ms-1">Descarcă</a>
+                        <a href="{{ c.cale_fisier }}" target="_blank" class="btn btn-sm btn-outline-primary">Vezi</a>
+                        <a href="{{ c.cale_fisier }}?fl_attachment={{ c.nume_fisier }}" download class="btn btn-sm btn-outline-secondary">Descarcă</a>
                     </td>
                     <td>
                         <form method="post" action="/modifica_status">
@@ -40,6 +40,7 @@
                             <select name="status" class="form-select form-select-sm d-inline w-auto">
                                 <option value="neacordat" {% if c.status == 'neacordat' %}selected{% endif %}>Neacordat</option>
                                 <option value="acordat" {% if c.status == 'acordat' %}selected{% endif %}>Acordat</option>
+                                <option value="refuzat" {% if c.status == 'refuzat' %}selected{% endif %}>Respins</option>
                                 <option value="retras" {% if c.status == 'retras' %}selected{% endif %}>Retras</option>
                             </select>
 
