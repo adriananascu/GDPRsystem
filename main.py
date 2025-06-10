@@ -436,13 +436,13 @@ def upload_document():
 
         try:
             upload_result = cloudinary.uploader.upload_large(
-                file,
+                file.stream,
                 resource_type="raw",
                 public_id=filename.rsplit('.', 1)[0],
                 folder="gdpr_docs"
-            )
+        )
 
-            file_url = upload_result['secure_url']  # linkul pe care îl salvezi în DB
+            file_url = upload_result['secure_url']  # linkul care se salveaza în DB
 
             cursor = db.cursor()
             scop = request.form.get('scop')
