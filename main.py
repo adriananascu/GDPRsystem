@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import psycopg2
 import psycopg2.extras
 import urllib.parse as urlparse
-import os
 from dotenv import load_dotenv
 from flask import send_from_directory
 from werkzeug.utils import secure_filename
@@ -14,7 +13,9 @@ from flask import send_file
 import openpyxl
 from io import BytesIO
 import uuid
+import os
 
+load_dotenv
 import cloudinary
 import cloudinary.uploader
 
@@ -23,9 +24,6 @@ cloudinary.config(
   api_key=os.getenv("CLOUDINARY_API_KEY"),
   api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
-
-load_dotenv()
-
 
 app = Flask(__name__)
 app.secret_key = 'super-secret'
