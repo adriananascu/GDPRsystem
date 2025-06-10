@@ -436,9 +436,9 @@ def upload_document():
             upload_result = cloudinary.uploader.upload_large(
                 file.stream,
                 resource_type="raw",
-                public_id=filename.rsplit('.', 1)[0],
+                public_id=filename,
                 folder="gdpr_docs"
-        )
+            )
 
             file_url = upload_result['secure_url']  # linkul care se salveaza în DB
 
