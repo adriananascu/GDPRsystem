@@ -435,34 +435,34 @@ def upload_document():
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
         file.save(filepath)
 
         cursor = db.cursor()
         scop = request.form.get('scop')
 
-        # 1. Salvăm documentul cu company_id
+        # 1. Inserăm documentul în tabelul `documente` CU company_id
         cursor.execute(
             "INSERT INTO documente (nume_fisier, cale_fisier, scop, company_id) VALUES (%s, %s, %s, %s) RETURNING id",
             (filename, filename, scop, company_id)
         )
         document_id = cursor.fetchone()[0]
 
-        # 2. Selectăm doar angajații din compania curentă
-        cursor.execute("SELECT email FROM users WHERE role = 'angajat' AND company_id = %s", (company_id,))
+        # 2. Căutăm toți angajații din aceeași companie
+        cursor.execute("SELECT email, functie FROM users WHERE role = 'angajat' AND company_id = %s", (company_id,))
         angajati = cursor.fetchall()
 
-        # 3. Inserăm în consimtamant_extins
+        # 3. Inserăm în `consimtamant_extins` pentru fiecare angajat
         for angajat in angajati:
             email = angajat[0]
+            functie = angajat[1]
             cursor.execute("""
                 INSERT INTO consimtamant_extins (
                     email, status, scop, tip_consimtamant, data_acordarii,
                     ip, user_agent, locatie, pagina_origine, rol, departament, document_id, company_id
-                )
-                VALUES (%s, %s, %s, %s, NULL, NULL, NULL, NULL, NULL, 'angajat', NULL, %s, %s)
+                ) VALUES (%s, %s, %s, %s, NULL,
+                          NULL, NULL, NULL, NULL, 'angajat', %s, %s, %s)
             """, (
-                email, 'neacordat', scop, 'explicit', document_id, company_id
+                email, 'neacordat', scop, 'explicit', functie, document_id, company_id
             ))
 
         db.commit()
