@@ -15,6 +15,15 @@ import openpyxl
 from io import BytesIO
 import uuid
 
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+  cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+  api_key=os.getenv("CLOUDINARY_API_KEY"),
+  api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
+
 load_dotenv()
 
 
@@ -406,15 +415,6 @@ def admin_dashboard():
         expirate_count=expirate_count
     )
 
-
-@app.route('/uploads/<path:filename>')
-def uploaded_file(filename):
-    if 'email' not in session and 'admin_email' not in session:
-        return "Unauthorized", 401
-
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-
 @app.route('/upload_document', methods=['POST'])
 def upload_document():
     if 'admin_email' not in session or 'company_id' not in session:
@@ -433,45 +433,53 @@ def upload_document():
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        file.save(filepath)
 
-        cursor = db.cursor()
-        scop = request.form.get('scop')
+        try:
+            upload_result = cloudinary.uploader.upload_large(
+                file,
+                resource_type="raw",
+                public_id=filename.rsplit('.', 1)[0],
+                folder="gdpr_docs"
+            )
 
-        # 1. Inserăm documentul în tabelul `documente` CU company_id
-        cursor.execute(
-            "INSERT INTO documente (nume_fisier, cale_fisier, scop, company_id) VALUES (%s, %s, %s, %s) RETURNING id",
-            (filename, filename, scop, company_id)
-        )
-        document_id = cursor.fetchone()[0]
+            file_url = upload_result['secure_url']  # linkul pe care îl salvezi în DB
 
-        # 2. Căutăm toți angajații din aceeași companie
-        cursor.execute("SELECT email, functie FROM users WHERE role = 'angajat' AND company_id = %s", (company_id,))
-        angajati = cursor.fetchall()
+            cursor = db.cursor()
+            scop = request.form.get('scop')
 
-        # 3. Inserăm în `consimtamant_extins` pentru fiecare angajat
-        for angajat in angajati:
-            email = angajat[0]
-            functie = angajat[1]
-            cursor.execute("""
-                INSERT INTO consimtamant_extins (
-                    email, status, scop, tip_consimtamant, data_acordarii,
-                    ip, user_agent, locatie, pagina_origine, rol, departament, document_id, company_id
-                ) VALUES (%s, %s, %s, %s, NULL,
-                          NULL, NULL, NULL, NULL, 'angajat', %s, %s, %s)
-            """, (
-                email, 'neacordat', scop, 'explicit', functie, document_id, company_id
-            ))
+            cursor.execute(
+                "INSERT INTO documente (nume_fisier, cale_fisier, scop, company_id) VALUES (%s, %s, %s, %s) RETURNING id",
+                (filename, file_url, scop, company_id)
+            )
+            document_id = cursor.fetchone()[0]
 
-        db.commit()
-        session['upload_succes'] = f"Fișierul „{filename}” a fost încărcat cu succes!"
-        return redirect(url_for('admin_dashboard'))
+            # Adaugă în consimtamant_extins pentru fiecare angajat
+            cursor.execute("SELECT email, functie FROM users WHERE role = 'angajat' AND company_id = %s", (company_id,))
+            angajati = cursor.fetchall()
+
+            for angajat in angajati:
+                email = angajat[0]
+                functie = angajat[1]
+                cursor.execute("""
+                    INSERT INTO consimtamant_extins (
+                        email, status, scop, tip_consimtamant, data_acordarii,
+                        ip, user_agent, locatie, pagina_origine, rol, departament, document_id, company_id
+                    ) VALUES (%s, %s, %s, %s, NULL,
+                              NULL, NULL, NULL, NULL, 'angajat', %s, %s, %s)
+                """, (
+                    email, 'neacordat', scop, 'explicit', functie, document_id, company_id
+                ))
+
+            db.commit()
+            session['upload_succes'] = f"Fișierul „{filename}” a fost încărcat cu succes!"
+            return redirect(url_for('admin_dashboard'))
+
+        except Exception as e:
+            session['upload_error'] = f"Eroare la upload în Cloudinary: {str(e)}"
+            return redirect(url_for('admin_dashboard'))
 
     session['upload_error'] = "Fișier invalid! Trebuie să fie PDF sau DOCX."
     return redirect(url_for('admin_dashboard'))
-
 
 
 
