@@ -25,7 +25,7 @@
                     <td>{{ doc.scop }}</td>
                     <td>
                         <a href="{{ doc.cale_fisier }}" class="btn btn-sm btn-outline-primary" target="_blank">Vezi</a>
-                        <a href="{{ doc.cale_fisier }}" download class="btn btn-sm btn-outline-secondary">Descarcă</a>
+                        <a href="{{ doc.cale_fisier }}" download="{{ doc.nume_fisier }}" class="btn btn-sm btn-outline-secondary">Descarcă</a>
                         <a href="/acorda_consimtamant/{{ doc.id }}" class="btn btn-sm btn-success">Acordă</a>
                         <a href="/refuza_consimtamant/{{ doc.id }}" class="btn btn-sm btn-danger">Refuză</a>
                     </td>
