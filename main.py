@@ -13,6 +13,7 @@ from werkzeug.utils import secure_filename
 from flask import send_file
 import openpyxl
 from io import BytesIO
+import uuid
 
 load_dotenv()
 
@@ -343,7 +344,11 @@ def admin_register():
                 error = "Emailul este deja înregistrat!"
             else:
                 parola_hash = generate_password_hash(parola)
-                cursor.execute("INSERT INTO admin_users (email, password) VALUES (%s, %s)", (email, parola_hash))
+                company_id = str(uuid.uuid4())
+                cursor.execute(
+                     "INSERT INTO admin_users (email, password, company_id) VALUES (%s, %s, %s)",
+                     (email, parola_hash, company_id)
+                )
                 db.commit()
                 mesaj = "Contul a fost creat cu succes! Acum te poți autentifica."
                 return redirect(url_for('admin_login'))
