@@ -14,10 +14,13 @@
             {% if eroare %}
                 <div class="alert alert-danger">{{ eroare }}</div>
             {% endif %}
+
             {% if mesaj %}
                 <div class="alert alert-success">{{ mesaj }}</div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary mt-3 w-100">← Înapoi la dashboard</a>
             {% endif %}
 
+            {% if not mesaj %}
             <form method="POST">
                 <div class="mb-3">
                     <label for="parola_veche" class="form-label">Parola veche</label>
@@ -33,6 +36,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Salvează</button>
             </form>
+            {% endif %}
         </div>
     </div>
 </div>
