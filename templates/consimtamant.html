@@ -30,10 +30,11 @@
                     <td>{{ c.data_acordarii or '-' }}</td>
                     <td>{{ c.ip or '-' }}</td>
                     <td>{{ c.locatie or '-' }}</td>
-                    <td>
-                        <a href="{{ c.cale_fisier }}" target="_blank" class="btn btn-sm btn-outline-primary">Vezi</a>
-                        <a href="{{ c.cale_fisier }}?fl_attachment={{ c.nume_fisier }}" download class="btn btn-sm btn-outline-secondary">Descarcă</a>
+                   <td>
+                        <a href="{{ c.document_url }}" class="btn btn-sm btn-outline-primary" target="_blank">Vezi</a>
+                        <a href="{{ c.document_url }}?fl_attachment={{ c.nume_fisier }}" class="btn btn-sm btn-outline-secondary">Descarcă</a>
                     </td>
+
                     <td>
                         <form method="post" action="/modifica_status">
                             <input type="hidden" name="id" value="{{ c.id }}">
