@@ -737,10 +737,16 @@ def vizualizeaza_consimtamant():
     return render_template("vizualizeaza_consimtamant.html", document=document)
 
 
+from io import BytesIO
+import openpyxl
+from flask import send_file
+
 @app.route('/descarca_raport')
 def descarca_raport():
-    if 'admin_email' not in session:
+    if 'admin_email' not in session or 'company_id' not in session:
         return redirect(url_for('admin_login'))
+
+    company_id = session['company_id']
 
     cursor = db.cursor()
     cursor.execute("""
@@ -749,23 +755,21 @@ def descarca_raport():
                COUNT(CASE WHEN ce.status = 'neacordat' THEN 1 END) AS total_neacordate
         FROM documente d
         LEFT JOIN consimtamant_extins ce ON d.id = ce.document_id
+        WHERE d.company_id = %s
         GROUP BY d.id, d.nume_fisier, d.scop
-    """)
+    """, (company_id,))
     rezultate = cursor.fetchall()
 
-    # Creăm workbook Excel
+    # Creăm fișierul Excel
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Raport Consimțăminte"
 
-    # Scriem headerul
     ws.append(["Nume fișier", "Scop", "Total acordate", "Total neacordate"])
 
-    # Adăugăm datele
     for row in rezultate:
         ws.append(row)
 
-    # Salvăm într-un fișier temporar
     fisier_temporar = BytesIO()
     wb.save(fisier_temporar)
     fisier_temporar.seek(0)
@@ -776,6 +780,7 @@ def descarca_raport():
         download_name="raport_consimtamant.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 if __name__ == '__main__':
     app.run(debug=True)
